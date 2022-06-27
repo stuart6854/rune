@@ -1,5 +1,6 @@
 #include "rune/systems/window.hpp"
 
+#include "rune/init.hpp"
 #include "rune/macros.hpp"
 
 #include <glad/glad.h>
@@ -109,6 +110,8 @@ namespace Rune
         glfwSetWindowUserPointer(static_cast<GLFWwindow*>(m_windowPtr), &m_data);
 
         setVSync(true);
+
+        glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr), [](GLFWwindow* window) { Game::close(); });
 
         return true;
     }
