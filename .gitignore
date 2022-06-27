@@ -1,0 +1,6 @@
+# Build files
+/out
+/build
+
+# Settings
+*.DotSettings.user

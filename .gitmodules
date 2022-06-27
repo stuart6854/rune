@@ -1,0 +1,16 @@
+[submodule "rune/lib/tomlplusplus"]
+	path = rune/lib/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus.git
+	shallow = true
+[submodule "rune/lib/fmt"]
+	path = rune/lib/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "rune/lib/spdlog"]
+	path = rune/lib/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "rune/lib/glm"]
+	path = rune/lib/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "rune/lib/glfw"]
+	path = rune/lib/glfw
+	url = git@github.com:glfw/glfw.git
