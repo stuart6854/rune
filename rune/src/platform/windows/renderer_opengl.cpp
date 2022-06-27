@@ -147,19 +147,19 @@ namespace Rune
             vbo = createBuffer(sizeof(vertices), vertices);
             // ebo = createBuffer(sizeof(vertices), vertices);
 
+            glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
+
             glEnableVertexArrayAttrib(vao, 0);
             glVertexArrayAttribBinding(vao, 0, 0);
-            glVertexArrayAttribFormat(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, pos));
+            glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
 
             glEnableVertexArrayAttrib(vao, 1);
             glVertexArrayAttribBinding(vao, 1, 0);
-            glVertexArrayAttribFormat(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, uv));
+            glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, uv));
 
             glEnableVertexArrayAttrib(vao, 2);
             glVertexArrayAttribBinding(vao, 2, 0);
-            glVertexArrayAttribFormat(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, norm));
-
-            glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
+            glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, norm));
 
             u32 vertShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vertShader, 1, &vert_shader_src, nullptr);
