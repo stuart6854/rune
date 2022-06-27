@@ -69,6 +69,60 @@ namespace Rune
         }
     }
 
+#ifdef _DEBUG
+    void openglMessageCallback(
+        GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* msg, void const* userParam)
+    {
+        // ignore non-significant error/warning codes
+        if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+            return;
+
+        std::string severityStr;
+        switch (severity)
+        {
+            case GL_DEBUG_SEVERITY_HIGH: severityStr = "high"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM: severityStr = "medium"; break;
+            case GL_DEBUG_SEVERITY_LOW: severityStr = "low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION: severityStr = "notification"; break;
+            default: severityStr = "Unknown"; break;
+        }
+
+        std::string sourceStr;
+        switch (src)
+        {
+            case GL_DEBUG_SOURCE_API: sourceStr = "API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM: sourceStr = "Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceStr = "Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY: sourceStr = "Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION: sourceStr = "Application"; break;
+            case GL_DEBUG_SOURCE_OTHER: sourceStr = "Other"; break;
+            default: sourceStr = "Unknown"; break;
+        }
+
+        std::string typeStr;
+        switch (type)
+        {
+            case GL_DEBUG_TYPE_ERROR: typeStr = "Error"; break;
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeStr = "Deprecated Behaviour"; break;
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeStr = " Undefined Behaviour"; break;
+            case GL_DEBUG_TYPE_PORTABILITY: typeStr = "Portability"; break;
+            case GL_DEBUG_TYPE_PERFORMANCE: typeStr = "Performance"; break;
+            case GL_DEBUG_TYPE_MARKER: typeStr = "Marker"; break;
+            case GL_DEBUG_TYPE_PUSH_GROUP: typeStr = "Push Group"; break;
+            case GL_DEBUG_TYPE_POP_GROUP: typeStr = "Pop Group"; break;
+            case GL_DEBUG_TYPE_OTHER: typeStr = "Other"; break;
+            default: typeStr = "Unknown"; break;
+        }
+
+        CORE_LOG_ERROR("--------------------");
+        CORE_LOG_ERROR("OpenGL Debug Message ({}) : {}", id, msg);
+        CORE_LOG_ERROR("Source: {}", sourceStr);
+        CORE_LOG_ERROR("Type: {}", typeStr);
+        CORE_LOG_ERROR("Severity: {}", severityStr);
+        CORE_LOG_ERROR("--------------------");
+    }
+#endif
+
     auto RendererOpenGl::create() -> Owned<RendererBase>
     {
         return CreateOwned<RendererOpenGl>();
@@ -80,6 +134,11 @@ namespace Rune
         RUNE_ENG_ASSERT(isOpenGlLoaded, "Failed to load OpenGL!");
 
         CORE_LOG_INFO("OpenGL Version {}.{}", GLVersion.major, GLVersion.minor);
+
+#ifdef _DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(openglMessageCallback, nullptr);
+#endif
 
         {
             // TODO: TEST CODE TO BE REMOVED
