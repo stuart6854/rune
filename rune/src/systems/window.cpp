@@ -2,6 +2,7 @@
 
 #include "rune/init.hpp"
 #include "rune/macros.hpp"
+#include "rune/systems/events/events.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -111,7 +112,8 @@ namespace Rune
 
         setVSync(true);
 
-        glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr), [](GLFWwindow* window) { Game::close(); });
+        glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr),
+                                   [](GLFWwindow* window) { EventSystem::notify(EventWindowClose{}); });
 
         glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(m_windowPtr),
                                        [](GLFWwindow* window, const int width, const int height)
@@ -119,7 +121,9 @@ namespace Rune
                                            auto* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                                            windowData->width = width;
                                            windowData->height = height;
-                                           //CORE_LOG_TRACE("Window Framebuffer: {}, {}", width, height);
+                                           // CORE_LOG_TRACE("Window Framebuffer: {}, {}", width, height);
+
+                                           EventSystem::notify(EventFramebufferSize{ width, height });
                                        });
 
         return true;
