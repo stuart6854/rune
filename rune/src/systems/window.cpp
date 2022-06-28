@@ -142,6 +142,8 @@ namespace Rune
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
+        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
+
         m_windowPtr = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
         if (!m_windowPtr)
         {
@@ -176,4 +178,5 @@ namespace Rune
         glfwSwapBuffers(static_cast<GLFWwindow*>(m_windowPtr));
         glfwPollEvents();
     }
+
 }
