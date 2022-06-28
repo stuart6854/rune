@@ -25,6 +25,9 @@ namespace Rune
         // Create texture
         auto texture = CreateOwned<Texture>();
 
+        // Enable flipping texture on load
+        stbi_set_flip_vertically_on_load(true);
+
         // Load texture file
         i32 w, h, c;
         auto* data = stbi_load(filename.c_str(), &w, &h, &c, 0);
