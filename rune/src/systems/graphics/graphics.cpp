@@ -74,6 +74,22 @@ namespace Rune
         m_renderer->setWindow(m_window);
     }
 
+    auto GraphicsSystem::createTexture(const i32 width, const i32 height, const TextureFormat format, const void* data) const -> u32
+    {
+        if (m_renderer == nullptr)
+            return 0;
+
+        return m_renderer->createTexture(width, height, format, data);
+    }
+
+    void GraphicsSystem::destroyTexture(const i32 id) const
+    {
+        if (m_renderer == nullptr)
+            return;
+
+        m_renderer->destroyTexture(id);
+    }
+
     void GraphicsSystem::render()
     {
         if (m_renderer == nullptr)

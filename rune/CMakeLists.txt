@@ -30,6 +30,7 @@ file(GLOB
 	"${source_dir}/systems/config.cpp"
 	"${source_dir}/systems/window.cpp"
 	"${source_dir}/systems/graphics/graphics.cpp"
+	"${source_dir}/systems/graphics/texture.cpp"
 	"${source_dir}/systems/events/events.cpp"
 	"${source_dir}/systems/assets/asset.cpp"
 	"${source_dir}/systems/assets/asset_factory.cpp"

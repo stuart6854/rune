@@ -6,7 +6,7 @@ namespace Rune
     {
         if (ext == ".obj")
             return AssetType::eMesh;
-        if (ext == ".png")
+        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
             return AssetType::eTexture;
 
         return AssetType::eNone;

@@ -16,7 +16,9 @@ namespace Rune
         void onFramebufferSize(i32 width, i32 height) override;
 
         auto createBuffer(size initialSize, void* initialData) -> u32 override;
-        auto createTexture() -> void* override;
+
+        auto createTexture(i32 width, i32 height, TextureFormat format, const void* data) -> u32 override;
+        void destroyTexture(i32 id) override;
 
         void beginFrame() override;
         void endFrame() override;

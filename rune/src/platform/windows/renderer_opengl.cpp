@@ -207,10 +207,13 @@ namespace Rune
         return buffer;
     }
 
-    auto RendererOpenGl::createTexture() -> void*
+    auto RendererOpenGl::createTexture(const i32 width, const i32 height, const TextureFormat format, const void* data) -> u32
     {
-        return nullptr;
+        // TODO: Create OpenGL Texture
+        return 0;
     }
+
+    void RendererOpenGl::destroyTexture(const i32 id) {}
 
     void RendererOpenGl::beginFrame()
     {

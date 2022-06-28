@@ -5,7 +5,9 @@
 #include "rune/systems/graphics/graphics.hpp"
 #include "rune/systems/log.hpp"
 #include "rune/systems/window.hpp"
+#include "rune/systems/assets/asset_factory.hpp"
 #include "rune/systems/events/events.hpp"
+#include "rune/systems/assets/asset_registry.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -55,6 +57,12 @@ namespace Rune
         auto& graphicsInst = GraphicsSystem::getInstance();
         graphicsInst.init(RenderingApi::eOpenGL);
         graphicsInst.setWindow(&WindowSystem::getInstance());
+
+        auto& assetRegistry = AssetRegistry::getInstance();
+        assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
+
+        auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
+        assetRegistry.load(textureHandle);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
