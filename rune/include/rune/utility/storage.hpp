@@ -13,6 +13,8 @@ namespace Rune
     public:
         auto add(const T& value) -> u32;
 
+        auto get(u32 index) -> T&;
+
         void remove(u32 index);
 
         auto count() const -> u32;
@@ -45,13 +47,19 @@ namespace Rune
 
         ++m_count;
 
-        return index;
+        return index + 1;
+    }
+
+    template <typename T>
+    auto Storage<T>::get(const u32 index) -> T&
+    {
+        return m_storage[index - 1];
     }
 
     template <typename T>
     void Storage<T>::remove(const u32 index)
     {
-        m_unusedIndices.push(index);
+        m_unusedIndices.push(index - 1);
         --m_count;
     }
 
