@@ -34,7 +34,7 @@ namespace Rune
         configInst.init();
         ConfigParser::parse(ConfigSystem::getEngineConfigFilename(), ConfigSystem::getInstance());
 
-        // TODO: Get window settings from config
+        // TODO: Tidy this away somewhere
         auto windowWidth = configInst.get("rendering.resolution_w");
         WindowSystem::WindowProps props{ "Rune" };
         if (windowWidth)
