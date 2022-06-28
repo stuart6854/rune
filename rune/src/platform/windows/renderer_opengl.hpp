@@ -13,6 +13,7 @@ namespace Rune
         void cleanup() override;
 
         void setWindow(WindowSystem* window) override;
+        void onFramebufferSize(i32 width, i32 height) override;
 
         auto createBuffer(size initialSize, void* initialData) -> u32 override;
         auto createTexture() -> void* override;

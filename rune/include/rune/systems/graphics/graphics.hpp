@@ -42,6 +42,8 @@ namespace Rune
     private:
         static void initRendererFactories();
 
+        void onFramebufferSize(i32 width, i32 height) const;
+
     private:
         RenderingApi m_renderingApi = RenderingApi::eNone;
         Owned<RendererBase> m_renderer;
@@ -58,6 +60,7 @@ namespace Rune
         virtual void cleanup() = 0;
 
         virtual void setWindow(WindowSystem* window) = 0;
+        virtual void onFramebufferSize(i32 width, i32 height) = 0;
 
         virtual auto createBuffer(size initialSize, void* initialData) -> u32 = 0;
         virtual auto createTexture() -> void* = 0;

@@ -1,6 +1,7 @@
 #include "rune/systems/graphics/graphics.hpp"
 
 #include "rune/macros.hpp"
+#include "rune/systems/events/events.hpp"
 
 namespace Rune
 {
@@ -22,6 +23,9 @@ namespace Rune
     {
         initRendererFactories();
         setRenderingApi(renderingApi);
+
+        EventSystem::listen<EventFramebufferSize>([this](const EventFramebufferSize& event)
+                                                  { onFramebufferSize(event.width, event.height); });
     }
 
     void GraphicsSystem::cleanup()
@@ -78,5 +82,13 @@ namespace Rune
         m_renderer->beginFrame();
         m_renderer->draw();
         m_renderer->endFrame();
+    }
+
+    void GraphicsSystem::onFramebufferSize(const i32 width, const i32 height) const
+    {
+        if (m_renderer == nullptr)
+            return;
+
+        m_renderer->onFramebufferSize(width, height);
     }
 }

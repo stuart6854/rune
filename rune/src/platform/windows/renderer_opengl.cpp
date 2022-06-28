@@ -192,6 +192,11 @@ namespace Rune
         glViewport(0, 0, window->getWidth(), window->getHeight());
     }
 
+    void RendererOpenGl::onFramebufferSize(const i32 width, const i32 height)
+    {
+        glViewport(0, 0, width, height);
+    }
+
     auto RendererOpenGl::createBuffer(const size initialSize, void* initialData) -> u32
     {
         u32 buffer;
