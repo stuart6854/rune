@@ -63,6 +63,11 @@ namespace Rune
         return m_data.vSync;
     }
 
+    auto WindowSystem::getWindowMode() const -> WindowMode
+    {
+        return m_data.mode;
+    }
+
     void WindowSystem::setTitle(const std::string& title)
     {
         m_data.title = title;
@@ -83,6 +88,42 @@ namespace Rune
     {
         glfwSwapInterval(vSync ? 1 : 0);
         m_data.vSync = vSync;
+    }
+
+    void WindowSystem::setWindowMode(const WindowMode mode)
+    {
+        if (mode == m_data.mode)
+            return;
+
+        auto* glfwWindow = static_cast<GLFWwindow*>(m_windowPtr);
+
+        m_data.mode = mode;
+        if (mode == WindowMode::eWindowed)
+        {
+            glfwSetWindowMonitor(glfwWindow, nullptr, 0, 0, m_data.width, m_data.height, GLFW_DONT_CARE);
+            centreWindow();
+
+            CORE_LOG_TRACE("Windowed Window: {}x{}", m_data.width, m_data.height);
+        }
+        else if (mode == WindowMode::eFullscreen)
+        {
+            glfwSetWindowMonitor(glfwWindow, glfwGetPrimaryMonitor(), 0, 0, m_data.width, m_data.height, GLFW_DONT_CARE);
+            CORE_LOG_TRACE("Fullscreen Window: {}x{}", m_data.width, m_data.height);
+        }
+        else if (mode == WindowMode::eBorderless)
+        {
+            auto* monitor = glfwGetPrimaryMonitor();
+            auto* videoMode = glfwGetVideoMode(monitor);
+
+            m_data.width = videoMode->width;
+            m_data.height = videoMode->height;
+
+            glfwSetWindowMonitor(glfwWindow, monitor, 0, 0, m_data.width, m_data.height, videoMode->refreshRate);
+
+            EventSystem::notify(EventFramebufferSize{ m_data.width, m_data.height });
+
+            CORE_LOG_TRACE("Borderless Window: {}x{}x{}hz", m_data.width, m_data.height, videoMode->refreshRate);
+        }
     }
 
     bool WindowSystem::createWindow(const WindowProps& props)
@@ -111,6 +152,7 @@ namespace Rune
         glfwSetWindowUserPointer(static_cast<GLFWwindow*>(m_windowPtr), &m_data);
 
         setVSync(true);
+        setWindowMode(props.windowMode);
 
         glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr),
                                    [](GLFWwindow* window) { EventSystem::notify(EventWindowClose{}); });
