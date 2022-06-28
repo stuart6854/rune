@@ -5,6 +5,7 @@
 #include "rune/systems/graphics/graphics.hpp"
 #include "rune/systems/log.hpp"
 #include "rune/systems/window.hpp"
+#include "rune/systems/events/events.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -23,21 +24,27 @@ namespace Rune
 
     void Game::sysInit()
     {
-        // Initialise engine subsystems
+        /* Initialise engine subsystems */
         LogSystem::init();
 
         CORE_LOG_INFO("CD:{}", std::filesystem::current_path().string());
         ConfigSystem::getInstance().init();
         ConfigParser::parse(ConfigSystem::getEngineConfigFilename(), ConfigSystem::getInstance());
 
-        WindowSystem::getInstance().init();
-        WindowSystem::getInstance().createWindow({ "Rune" });
+        // TODO: Get window settings from config
+        auto& windowInst = WindowSystem::getInstance();
+        windowInst.init();
+        windowInst.createWindow({ "Rune" });
 
-        // TODO: Get rendering system from config
-        GraphicsSystem::getInstance().init(RenderingApi::eOpenGL);
-        GraphicsSystem::getInstance().setWindow(&WindowSystem::getInstance());
+        // TODO: Get rendering settings from config
+        auto& graphicsInst = GraphicsSystem::getInstance();
+        graphicsInst.init(RenderingApi::eOpenGL);
+        graphicsInst.setWindow(&WindowSystem::getInstance());
 
-        // Call application init
+        // Register core events
+        EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
+
+        /* Call application init */
         init();
     }
 
