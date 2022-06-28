@@ -24,8 +24,8 @@ namespace Rune
         struct WindowProps
         {
             std::string title = "Window";
-            u32 width = 1280;
-            u32 height = 768;
+            i32 width = 1280;
+            i32 height = 768;
             WindowMode windowMode = WindowMode::eWindowed;
         };
 
@@ -48,8 +48,8 @@ namespace Rune
         struct WindowData
         {
             std::string title;
-            u32 width;
-            u32 height;
+            i32 width;
+            i32 height;
             bool vSync;
             WindowMode mode;
         };
