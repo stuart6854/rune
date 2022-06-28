@@ -14,8 +14,11 @@ layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec2 a_uv;
 layout (location = 2) in vec3 a_norm;
 
+layout(location = 0) out vec2 out_uv;
+
 void main()
 {
+	out_uv = a_uv;
 	gl_Position = vec4(a_pos, 1.0);
 }
 )";
@@ -23,18 +26,23 @@ void main()
 const auto frag_shader_src = R"(
 #version 450 core
 
+layout(location = 0) in vec2 in_uv;
+
+uniform sampler2D tex;
+
 out vec4 out_fragColor;
 
 void main()
 {
-	out_fragColor = vec4(1.0, 0.5, 0.2, 1.0);
+	vec4 color = texture(tex, in_uv);
+	out_fragColor = color; //vec4(1.0, 0.5, 0.2, 1.0);
 }
 )";
 
 Rune::Vertex vertices[] = {
-    { { -0.5f, -0.5f, 0.0f } },
-    { { 0.5f, -0.5f, 0.0f } },
-    { { 0.0f, 0.5f, 0.0f } },
+    { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f } },
+    { { 0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f } },
+    { { 0.0f, 0.5f, 0.0f }, { 0.5f, 1.0f } },
 };
 
 u32 vao = 0;
