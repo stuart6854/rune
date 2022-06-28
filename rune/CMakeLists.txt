@@ -17,6 +17,7 @@ set(GLAD_DIR "${LIB_DIR}/glad")
 set(GLM_DIR "${LIB_DIR}/glm")
 set(SPDLOG_DIR "${LIB_DIR}/spdlog")
 set(TOML_DIR "${LIB_DIR}/tomlplusplus")
+set(STB_DIR "${LIB_DIR}/stb")
 
 message("${SPDLOG_DIR}")
 
@@ -104,3 +105,6 @@ target_include_directories(rune PUBLIC "${SPDLOG_DIR}/include")
 # Link toml++
 target_link_libraries(rune PUBLIC tomlplusplus::tomlplusplus)
 target_include_directories(rune PUBLIC "${TOML_DIR}/include")
+
+# Link stb
+target_include_directories(rune PUBLIC "${STB_DIR}/include")
