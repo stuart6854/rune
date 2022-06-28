@@ -1,8 +1,9 @@
-[Rendering]
-resolution="1080x720"
+[rendering]
+resolution_w=1280
+resolution_h=720
 window_mode=0
 vsync=1
 
-[Audio]
+[audio]
 master_vol=1
 some_double=3.1415

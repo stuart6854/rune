@@ -28,13 +28,28 @@ namespace Rune
         LogSystem::init();
 
         CORE_LOG_INFO("CD:{}", std::filesystem::current_path().string());
-        ConfigSystem::getInstance().init();
+        auto& configInst = ConfigSystem::getInstance();
+        configInst.init();
         ConfigParser::parse(ConfigSystem::getEngineConfigFilename(), ConfigSystem::getInstance());
 
         // TODO: Get window settings from config
+        auto windowWidth = configInst.get("rendering.resolution_w");
+        WindowSystem::WindowProps props{ "Rune" };
+        if (windowWidth)
+            props.width = windowWidth->getInt();
+        auto windowHeight = configInst.get("rendering.resolution_h");
+        if (windowHeight)
+            props.height = windowHeight->getInt();
+        auto windowVSync = configInst.get("rendering.vsync");
+        if (windowVSync)
+            props.vSync = windowVSync->getInt();
+        auto windowMode = configInst.get("rendering.window_mode");
+        if (windowVSync)
+            props.windowMode = static_cast<WindowMode>(windowMode->getInt());
+
         auto& windowInst = WindowSystem::getInstance();
         windowInst.init();
-        windowInst.createWindow({ "Rune" });
+        windowInst.createWindow(props);
 
         // TODO: Get rendering settings from config
         auto& graphicsInst = GraphicsSystem::getInstance();
