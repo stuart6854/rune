@@ -1,6 +1,8 @@
-# Build files
+## Build files
 /out
 /build
 
-# Settings
+## Settings
 *.DotSettings.user
+# RenderDoc Capture Settings
+*.cap
