@@ -29,6 +29,7 @@ file(GLOB
 	"${source_dir}/systems/config.cpp"
 	"${source_dir}/systems/window.cpp"
 	"${source_dir}/systems/graphics/graphics.cpp"
+	"${source_dir}/systems/events/events.cpp"
 	"${source_dir}/platform/${target_platform}/sample.cpp"
 	"${source_dir}/platform/${target_platform}/graphics.cpp"
 	"${source_dir}/platform/${target_platform}/renderer_opengl.cpp"
