@@ -151,8 +151,8 @@ namespace Rune
         glfwMakeContextCurrent(static_cast<GLFWwindow*>(m_windowPtr));
         glfwSetWindowUserPointer(static_cast<GLFWwindow*>(m_windowPtr), &m_data);
 
-        setVSync(true);
         setWindowMode(props.windowMode);
+        setVSync(props.vSync);
 
         glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr),
                                    [](GLFWwindow* window) { EventSystem::notify(EventWindowClose{}); });

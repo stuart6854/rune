@@ -26,6 +26,7 @@ namespace Rune
             std::string title = "Window";
             i32 width = 1280;
             i32 height = 768;
+            bool vSync = true;
             WindowMode windowMode = WindowMode::eWindowed;
         };
 
