@@ -123,6 +123,30 @@ namespace Rune
     }
 #endif
 
+    auto toGLInternalTextureFormat(const TextureFormat format) -> GLint
+    {
+        switch (format)
+        {
+            case TextureFormat::eR: return GL_R8;
+            case TextureFormat::eRGB: return GL_RGB8;
+            case TextureFormat::eRGBA: return GL_RGBA8;
+            case TextureFormat::eUnknown: return 0;
+        }
+        return 0;
+    }
+
+    auto toGLTextureFormat(const TextureFormat format) -> GLint
+    {
+        switch (format)
+        {
+            case TextureFormat::eR: return GL_RED;
+            case TextureFormat::eRGB: return GL_RGB;
+            case TextureFormat::eRGBA: return GL_RGBA;
+            case TextureFormat::eUnknown: return 0;
+        }
+        return 0;
+    }
+
     auto RendererOpenGl::create() -> Owned<RendererBase>
     {
         return CreateOwned<RendererOpenGl>();
@@ -209,11 +233,34 @@ namespace Rune
 
     auto RendererOpenGl::createTexture(const i32 width, const i32 height, const TextureFormat format, const void* data) -> u32
     {
-        // TODO: Create OpenGL Texture
-        return 0;
+        GLuint textureId;
+        glCreateTextures(GL_TEXTURE_2D, 1, &textureId);
+
+        glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        auto glInternalFormat = toGLInternalTextureFormat(format);
+        glTextureStorage2D(textureId, 1, glInternalFormat, width, height);
+        auto glFormat = toGLTextureFormat(format);
+        glTextureSubImage2D(textureId, 0, 0, 0, width, height, glFormat, GL_UNSIGNED_BYTE, data);
+
+        glGenerateTextureMipmap(textureId);
+
+        return m_textures.add(textureId);
     }
 
-    void RendererOpenGl::destroyTexture(const i32 id) {}
+    void RendererOpenGl::destroyTexture(const i32 id)
+    {
+        if (id == 0)
+            return;
+
+        auto textureId = m_textures.get(id);
+        m_textures.remove(id);
+
+        glDeleteTextures(1, &textureId);
+    }
 
     void RendererOpenGl::beginFrame()
     {
@@ -226,6 +273,10 @@ namespace Rune
     void RendererOpenGl::draw()
     {
         glUseProgram(shaderProgram);
+
+        // Texture
+        glBindTextureUnit(0, m_textures.get(1));
+        glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
 
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);

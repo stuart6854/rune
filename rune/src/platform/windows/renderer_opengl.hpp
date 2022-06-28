@@ -1,6 +1,9 @@
 #pragma once
 
 #include "rune/systems/graphics/graphics.hpp"
+#include "rune/utility/storage.hpp"
+
+#include <glad/glad.h>
 
 namespace Rune
 {
@@ -24,5 +27,8 @@ namespace Rune
         void endFrame() override;
 
         void draw() override;
+
+    private:
+        Storage<GLuint> m_textures;
     };
 }
