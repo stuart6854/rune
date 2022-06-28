@@ -101,7 +101,6 @@ namespace Rune
         if (mode == WindowMode::eWindowed)
         {
             glfwSetWindowMonitor(glfwWindow, nullptr, 0, 0, m_data.width, m_data.height, GLFW_DONT_CARE);
-            centreWindow();
 
             CORE_LOG_TRACE("Windowed Window: {}x{}", m_data.width, m_data.height);
         }
