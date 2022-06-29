@@ -18,6 +18,7 @@ set(GLM_DIR "${LIB_DIR}/glm")
 set(SPDLOG_DIR "${LIB_DIR}/spdlog")
 set(TOML_DIR "${LIB_DIR}/tomlplusplus")
 set(STB_DIR "${LIB_DIR}/stb")
+set(ASSIMP_DIR "${LIB_DIR}/assimp")
 
 message("${SPDLOG_DIR}")
 
@@ -65,6 +66,20 @@ set(GLFW_INSTALL OFF CACHE INTERNAL "Generate the installation target")
 # spdlog features
 set(SPDLOG_FMT_EXTERNAL OFF CACHE INTERNAL "Use external fmt library instead of bundled")
 
+# assimp features
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build package with shared libraries.")
+set(ASSIMP_NO_EXPORT OFF CACHE INTERNAL "Disable Assimp's export functionality.")
+set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library.")
+set(ASSIMP_INSTALL OFF CACHE INTERNAL "Disable this if you want to use assimp as a submodule.")
+set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE INTERNAL "If the Assimp view tool is built. (requires DirectX)")
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF CACHE INTERNAL "default value of all ASSIMP_BUILD_XXX_EXPORTER values")
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE INTERNAL "default value of all ASSIMP_BUILD_XXX_IMPORTER values")
+set(ASSIMP_BUILD_OBJ_IMPORTER ON)
+set(ASSIMP_BUILD_FBX_IMPORTER ON)
+set(ASSIMP_BUILD_GLTF_IMPORTER ON)
+set(ASSIMP_BUILD_ASSBIN_EXPORTER ON)
+set(ASSIMP_BUILD_ASSXML_EXPORTER ON)
+
 # Ser PIC for using fmt as shared lib
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
@@ -74,6 +89,7 @@ add_subdirectory(${GLFW_DIR})
 add_subdirectory(${GLM_DIR})
 add_subdirectory(${SPDLOG_DIR})
 add_subdirectory(${TOML_DIR})
+add_subdirectory(${ASSIMP_DIR})
 
 # Define library
 add_library(rune)
@@ -109,3 +125,7 @@ target_include_directories(rune PUBLIC "${TOML_DIR}/include")
 
 # Link stb
 target_include_directories(rune PUBLIC "${STB_DIR}/include")
+
+# Link assimp
+target_link_libraries(rune PUBLIC assimp::assimp)
+target_include_directories(rune PUBLIC "${ASSIMP_DIR}/include")
