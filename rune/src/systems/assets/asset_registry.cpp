@@ -64,7 +64,10 @@ namespace Rune
         // Get the factory for the assets type
         const auto& factory = m_assetFactories[static_cast<i8>(metadata.type)];
         if (factory == nullptr)
+        {
+            CORE_LOG_ERROR("No asset factory registered for asset type!");
             return;
+        }
 
         // This asset source is not loaded from a file
         if (metadata.sourceFile.empty())
