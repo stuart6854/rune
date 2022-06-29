@@ -10,9 +10,11 @@ namespace Rune
     class Game
     {
     public:
-        void init();
-        void update();
-        void cleanup();
+        virtual ~Game() = default;
+
+        virtual void init() {}
+        virtual void update() {}
+        virtual void cleanup() {}
 
         void sysInit();
         void sysUpdate();
@@ -25,7 +27,9 @@ namespace Rune
     private:
     };
 
-    inline Game& createGame();
+    /* Entry-Point function defined by client. Should return a derived instance of Game */
+    extern auto createGame() -> Game*;
+
 }  // namespace Rune
 
 // Sample platform-specific function

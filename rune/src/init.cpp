@@ -14,7 +14,6 @@
 
 namespace Rune
 {
-
     namespace
     {
         bool s_shouldStop = false;
@@ -101,21 +100,15 @@ namespace Rune
         s_shouldStop = true;
     }
 
-    Game& createGame()
-    {
-        static Game g;
-        return g;
-    }
-
 }  // namespace Rune
 
 int main(int, char**)
 {
-    std::cout << "Platform: " << platform << std::endl;
+    auto* game = Rune::createGame();
+    game->sysInit();
+    game->run();
+    game->sysCleanup();
+    delete game;
 
-    auto& game = Rune::createGame();
-    game.sysInit();
-    game.run();
-    game.sysCleanup();
     return 0;
 }

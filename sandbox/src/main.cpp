@@ -1,14 +1,24 @@
 #include <rune.hpp>
 
-void Rune::Game::init()
+class Sandbox : public Rune::Game
 {
-    LOG_TRACE("Game::init()");
-}
+public:
+    void init() override
+    {
+        LOG_TRACE("Game::init()");
+    }
 
-void Rune::Game::update() {}
+    void update() override {}
 
-void Rune::Game::cleanup()
+    void cleanup() override
+    {
+        LOG_TRACE("Game::cleanup()");
+    }
+
+private:
+};
+
+auto Rune::createGame() -> Game*
 {
-    LOG_TRACE("Game::cleanup()");
-
+    return new Sandbox();
 }
