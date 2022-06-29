@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+*	text=auto
+
+# 3D Models
+*.obj	filter=lfs	diff=lfs	merge=lfs	binary
+*.fbx	filter=lfs	diff=lfs	merge=lfs	binary
+*.gltf	filter=lfs	diff=lfs	merge=lfs	binary
+
+# Textures
+*.png	filter=lfs	diff=lfs	merge=lfs	binary
+*.jpg	filter=lfs	diff=lfs	merge=lfs	binary
+*.jpeg	filter=lfs	diff=lfs	merge=lfs	binary
