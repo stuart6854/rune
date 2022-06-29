@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 const auto vert_shader_src = R"(
 #version 450 core
@@ -16,10 +18,12 @@ layout (location = 2) in vec3 a_norm;
 
 layout(location = 0) out vec2 out_uv;
 
+uniform mat4 u_mvp;
+
 void main()
 {
 	out_uv = a_uv;
-	gl_Position = vec4(a_pos, 1.0);
+	gl_Position = u_mvp * vec4(a_pos, 1.0);
 }
 )";
 
@@ -311,6 +315,12 @@ namespace Rune
         // Texture
         glBindTextureUnit(0, m_textures.get(1));
         glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+
+        // MVP
+        auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+        auto mvp = proj * view;
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "u_mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
 
         const auto& mesh = m_meshes.get(1);
         glBindVertexArray(mesh.vao);
