@@ -30,8 +30,4 @@ namespace Rune
         Guid m_guid;
         AssetType m_type = AssetType::eNone;
     };
-
-    class Mesh : public Asset
-    {
-    };
 }

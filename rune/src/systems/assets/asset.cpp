@@ -4,7 +4,7 @@ namespace Rune
 {
     auto assetTypeFromFileExt(const std::string& ext) -> AssetType
     {
-        if (ext == ".obj")
+        if (ext == ".obj" || ext == ".fbx" || ext == ".gltf")
             return AssetType::eMesh;
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
             return AssetType::eTexture;

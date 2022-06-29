@@ -39,16 +39,6 @@ void main()
 }
 )";
 
-Rune::Vertex vertices[] = {
-    { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f } },
-    { { 0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f } },
-    { { 0.0f, 0.5f, 0.0f }, { 0.5f, 1.0f } },
-};
-
-u32 vao = 0;
-u32 vbo = 0;
-u32 ebo = 0;
-
 u32 shaderProgram = 0;
 
 namespace Rune
@@ -155,6 +145,17 @@ namespace Rune
         return 0;
     }
 
+    auto toGLTopology(const MeshTopology topology) -> GLenum
+    {
+        switch (topology)
+        {
+            case MeshTopology::eLines: return GL_LINES;
+            case MeshTopology::eTriangles: return GL_TRIANGLES;
+            case MeshTopology::eNone: break;
+        }
+        return 0;
+    }
+
     auto RendererOpenGl::create() -> Owned<RendererBase>
     {
         return CreateOwned<RendererOpenGl>();
@@ -174,24 +175,6 @@ namespace Rune
 
         {
             // TODO: TEST CODE TO BE REMOVED
-
-            glCreateVertexArrays(1, &vao);
-            vbo = createBuffer(sizeof(vertices), vertices);
-            // ebo = createBuffer(sizeof(vertices), vertices);
-
-            glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
-
-            glEnableVertexArrayAttrib(vao, 0);
-            glVertexArrayAttribBinding(vao, 0, 0);
-            glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
-
-            glEnableVertexArrayAttrib(vao, 1);
-            glVertexArrayAttribBinding(vao, 1, 0);
-            glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, uv));
-
-            glEnableVertexArrayAttrib(vao, 2);
-            glVertexArrayAttribBinding(vao, 2, 0);
-            glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, norm));
 
             u32 vertShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vertShader, 1, &vert_shader_src, nullptr);
@@ -229,7 +212,7 @@ namespace Rune
         glViewport(0, 0, width, height);
     }
 
-    auto RendererOpenGl::createBuffer(const size initialSize, void* initialData) -> u32
+    auto RendererOpenGl::createBuffer(const size initialSize, const void* initialData) -> u32
     {
         u32 buffer;
         glCreateBuffers(1, &buffer);
@@ -270,6 +253,49 @@ namespace Rune
         glDeleteTextures(1, &textureId);
     }
 
+    auto RendererOpenGl::createMesh(const MeshTopology topology, const std::vector<Vertex>& vertices, const std::vector<u16>& indices)
+        -> u32
+    {
+        Mesh mesh{};
+        mesh.topology = toGLTopology(topology);
+        mesh.indexCount = indices.size();
+
+        glCreateVertexArrays(1, &mesh.vao);
+
+        mesh.vbo = createBuffer(sizeof(Vertex) * vertices.size(), vertices.data());
+        mesh.ebo = createBuffer(sizeof(u16) * indices.size(), indices.data());
+
+        glVertexArrayVertexBuffer(mesh.vao, 0, mesh.vbo, 0, sizeof(Vertex));
+        glVertexArrayElementBuffer(mesh.vao, mesh.ebo);
+
+        glEnableVertexArrayAttrib(mesh.vao, 0);
+        glVertexArrayAttribBinding(mesh.vao, 0, 0);
+        glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
+
+        glEnableVertexArrayAttrib(mesh.vao, 1);
+        glVertexArrayAttribBinding(mesh.vao, 1, 0);
+        glVertexArrayAttribFormat(mesh.vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, uv));
+
+        glEnableVertexArrayAttrib(mesh.vao, 2);
+        glVertexArrayAttribBinding(mesh.vao, 2, 0);
+        glVertexArrayAttribFormat(mesh.vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, norm));
+
+        return m_meshes.add(mesh);
+    }
+
+    void RendererOpenGl::destroyMesh(const i32 id)
+    {
+        if (id == 0)
+            return;
+
+        const auto& mesh = m_meshes.get(id);
+        m_meshes.remove(id);
+
+        glDeleteVertexArrays(1, &mesh.vao);
+        glDeleteBuffers(1, &mesh.vbo);
+        glDeleteBuffers(1, &mesh.ebo);
+    }
+
     void RendererOpenGl::beginFrame()
     {
         glClear(GL_COLOR_BUFFER_BIT);
@@ -286,7 +312,8 @@ namespace Rune
         glBindTextureUnit(0, m_textures.get(1));
         glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
 
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        const auto& mesh = m_meshes.get(1);
+        glBindVertexArray(mesh.vao);
+        glDrawElements(mesh.topology, mesh.indexCount, GL_UNSIGNED_SHORT, nullptr);
     }
 }

@@ -23,9 +23,9 @@ namespace Rune
     class MeshFactory : public AssetFactory
     {
     public:
-        auto createFromFile(const std::string& filename) -> Owned<Asset> override
-        {
-            return nullptr;
-        }
+        auto createFromFile(const std::string& filename) -> Owned<Asset> override;
+
+    private:
+
     };
 }

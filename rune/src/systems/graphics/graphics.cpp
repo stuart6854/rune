@@ -90,6 +90,24 @@ namespace Rune
         m_renderer->destroyTexture(id);
     }
 
+    u32 GraphicsSystem::createMesh(const MeshTopology topology,
+                                   const std::vector<Vertex>& vertices,
+                                   const std::vector<u16>& indices) const
+    {
+        if (m_renderer == nullptr)
+            return 0;
+
+        return m_renderer->createMesh(topology, vertices, indices);
+    }
+
+    void GraphicsSystem::destroyMesh(const i32 id) const
+    {
+        if (m_renderer == nullptr)
+            return;
+
+        m_renderer->destroyMesh(id);
+    }
+
     void GraphicsSystem::render()
     {
         if (m_renderer == nullptr)
