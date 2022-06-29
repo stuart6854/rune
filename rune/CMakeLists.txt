@@ -39,6 +39,7 @@ file(GLOB
 	"${source_dir}/systems/assets/asset_registry.cpp"
 	"${source_dir}/maths/random.cpp"
 	"${source_dir}/utility/guid.cpp"
+	"${source_dir}/utility/buffer.cpp"
 	"${source_dir}/platform/${target_platform}/sample.cpp"
 	"${source_dir}/platform/${target_platform}/graphics.cpp"
 	"${source_dir}/platform/${target_platform}/renderer_opengl.cpp"
