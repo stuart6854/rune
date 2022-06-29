@@ -177,6 +177,8 @@ namespace Rune
         glDebugMessageCallback(openglMessageCallback, nullptr);
 #endif
 
+        glEnable(GL_DEPTH_TEST);
+
         {
             // TODO: TEST CODE TO BE REMOVED
 
@@ -302,7 +304,7 @@ namespace Rune
 
     void RendererOpenGl::beginFrame()
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.3912f, 0.5843f, 0.9294f, 1.0f);  // Cornflower Blue
     }
 
