@@ -59,9 +59,15 @@ namespace Rune
 
         auto& assetRegistry = AssetRegistry::getInstance();
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
+        assetRegistry.registerFactory<MeshFactory>(AssetType::eMesh);
 
-        auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
+        //auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
+        auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
         assetRegistry.load(textureHandle);
+
+        //auto meshHandle = assetRegistry.add("assets/models/pyramid/pyramid.fbx");
+        auto meshHandle = assetRegistry.add("assets/models/backpack/backpack.obj");
+        assetRegistry.load(meshHandle);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
