@@ -63,7 +63,8 @@ namespace Rune
 
     auto MeshFactory::createFromFile(const std::string& filename) -> Owned<Asset>
     {
-        constexpr auto importFlags = aiProcessPreset_TargetRealtime_Fast | aiProcess_PreTransformVertices | aiProcess_OptimizeMeshes;
+        constexpr auto importFlags =
+            aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_PreTransformVertices | aiProcess_OptimizeMeshes;
 
         // Create mesh
         auto newMesh = CreateOwned<Mesh>();
