@@ -41,6 +41,7 @@ file(GLOB
 	"${source_dir}/utility/guid.cpp"
 	"${source_dir}/utility/buffer.cpp"
 	"${source_dir}/platform/${target_platform}/sample.cpp"
+	"${source_dir}/platform/${target_platform}/time.cpp"
 	"${source_dir}/platform/${target_platform}/graphics.cpp"
 	"${source_dir}/platform/${target_platform}/renderer_opengl.cpp"
 	"${GLAD_DIR}/src/glad.c"

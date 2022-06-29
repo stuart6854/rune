@@ -4,6 +4,7 @@
 #include "rune/systems/config.hpp"
 #include "rune/systems/graphics/graphics.hpp"
 #include "rune/systems/log.hpp"
+#include "rune/systems/time.hpp"
 #include "rune/systems/window.hpp"
 #include "rune/systems/assets/asset_factory.hpp"
 #include "rune/systems/events/events.hpp"
@@ -27,6 +28,7 @@ namespace Rune
     {
         /* Initialise engine subsystems */
         LogSystem::init();
+        Time::beginFrame();
 
         CORE_LOG_INFO("CD:{}", std::filesystem::current_path().string());
         auto& configInst = ConfigSystem::getInstance();
@@ -94,6 +96,7 @@ namespace Rune
     {
         while (!s_shouldStop)
         {
+            Time::beginFrame();
             WindowSystem::getInstance().update();
             sysUpdate();
             update();
