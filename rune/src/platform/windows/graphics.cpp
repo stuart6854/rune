@@ -1,11 +1,11 @@
 #include "rune/graphics/graphics.hpp"
 
-#include "renderer_opengl.hpp"
+#include "platform/opengl/renderer.hpp"
 
 namespace Rune
 {
     void GraphicsSystem::initRendererFactories()
     {
-        registerRendererFactory(RenderingApi::eOpenGL, RendererOpenGl::create);
+        registerRendererFactory(RenderingApi::eOpenGL, Renderer_OpenGL::create);
     }
 }

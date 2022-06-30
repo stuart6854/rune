@@ -22,6 +22,10 @@ namespace Rune
         // Static engine systems
         // static WindowSystem s_windowSystem;
         // InputSystem& s_inputSystem = InputSystem::getInstance();
+
+        Mesh* mesh = nullptr;
+        Texture* texture = nullptr;
+
     }  // namespace
 
     void Game::sysInit()
@@ -66,10 +70,12 @@ namespace Rune
         // auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
         auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
         assetRegistry.load(textureHandle);
+        texture = assetRegistry.get<Texture>(textureHandle);
 
         // auto meshHandle = assetRegistry.add("assets/models/pyramid/pyramid.fbx");
         auto meshHandle = assetRegistry.add("assets/models/backpack/backpack.obj");
         assetRegistry.load(meshHandle);
+        mesh = assetRegistry.get<Mesh>(meshHandle);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -100,7 +106,7 @@ namespace Rune
             WindowSystem::getInstance().update();
             sysUpdate();
             update();
-            GraphicsSystem::getInstance().render();
+            GraphicsSystem::getInstance().render(mesh, texture);
         }
     }
 

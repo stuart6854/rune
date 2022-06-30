@@ -74,55 +74,21 @@ namespace Rune
         m_renderer->setWindow(m_window);
     }
 
-    auto GraphicsSystem::createTexture(const i32 width, const i32 height, const TextureFormat format, const void* data) const -> u32
-    {
-        if (m_renderer == nullptr)
-            return 0;
-
-        return m_renderer->createTexture(width, height, format, data);
-    }
-
-    void GraphicsSystem::destroyTexture(const i32 id) const
-    {
-        if (m_renderer == nullptr)
-            return;
-
-        m_renderer->destroyTexture(id);
-    }
-
-    u32 GraphicsSystem::createMesh(const MeshTopology topology,
-                                   const std::vector<Vertex>& vertices,
-                                   const std::vector<u16>& indices) const
-    {
-        if (m_renderer == nullptr)
-            return 0;
-
-        return m_renderer->createMesh(topology, vertices, indices);
-    }
-
-    void GraphicsSystem::destroyMesh(const i32 id) const
-    {
-        if (m_renderer == nullptr)
-            return;
-
-        m_renderer->destroyMesh(id);
-    }
-
-    void GraphicsSystem::render()
-    {
-        if (m_renderer == nullptr)
-            return;
-
-        m_renderer->beginFrame();
-        m_renderer->draw();
-        m_renderer->endFrame();
-    }
-
     void GraphicsSystem::onFramebufferSize(const i32 width, const i32 height) const
     {
         if (m_renderer == nullptr)
             return;
 
         m_renderer->onFramebufferSize(width, height);
+    }
+
+    void GraphicsSystem::render(Mesh* mesh, Texture* texture)
+    {
+        if (m_renderer == nullptr)
+            return;
+
+        m_renderer->beginFrame();
+        m_renderer->draw(mesh, texture);
+        m_renderer->endFrame();
     }
 }

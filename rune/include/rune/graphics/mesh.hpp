@@ -17,6 +17,15 @@ namespace Rune
     class Mesh : public Asset
     {
     public:
+        class Observer
+        {
+        public:
+            virtual ~Observer() = default;
+
+            virtual void destroying(const Mesh* mesh) = 0;
+            virtual void changed(const Mesh* mesh) = 0;
+        };
+
         struct Submesh
         {
             i32 firstIndex;
@@ -26,13 +35,26 @@ namespace Rune
     public:
         ~Mesh() override;
 
+        void attachObserver(Observer* observer);
+        void detachObserver(Observer* observer);
+
+        auto getIndices() const -> const std::vector<u16>&;
+        auto getVertices() const -> const std::vector<Vertex>&;
+        auto getTopology() const -> MeshTopology;
+
         void setVertices(const std::vector<Vertex>& vertices);
         void setIndices(const std::vector<u16>& indices, MeshTopology topology);
         void setSubmesh(size index, const Submesh& submesh);
 
-        void apply();
+        void apply() const;
+
+    protected:
+        void onDestroying() const;
+        void onChanged() const;
 
     private:
+        std::vector<Observer*> m_observers;
+
         // std::vector<Material> m_materials;
 
         std::vector<u16> m_indices;

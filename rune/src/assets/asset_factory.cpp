@@ -52,8 +52,11 @@ namespace Rune
             return nullptr;
         }
 
+        std::vector<u8> pixels;
+        pixels.assign(data, data + w * h * c);
+
         // Init texture with loaded data
-        texture->init(w, h, format, data);
+        texture->init(w, h, format, pixels);
 
         // Free texture data
         stbi_image_free(data);

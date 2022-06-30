@@ -30,6 +30,7 @@ file(GLOB
 	"${source_dir}/core/log.cpp"
 	"${source_dir}/core/config.cpp"
 	"${source_dir}/core/window.cpp"
+	"${source_dir}/graphics/renderer.cpp"
 	"${source_dir}/graphics/graphics.cpp"
 	"${source_dir}/graphics/texture.cpp"
 	"${source_dir}/graphics/mesh.cpp"
@@ -43,12 +44,12 @@ file(GLOB
 	"${source_dir}/platform/${target_platform}/sample.cpp"
 	"${source_dir}/platform/${target_platform}/time.cpp"
 	"${source_dir}/platform/${target_platform}/graphics.cpp"
-	"${source_dir}/platform/${target_platform}/renderer_opengl.cpp"
+	"${source_dir}/platform/opengl/renderer.cpp"
 	"${GLAD_DIR}/src/glad.c"
 )
 
 # Include dir
-set(include_dir "${PROJECT_SOURCE_DIR}/include")
+set(include_dir "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src")
 
 # Check for OpenGL
 find_package(OpenGL)
