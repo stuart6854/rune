@@ -15,7 +15,7 @@
     #error Unknown platform is not currently supported!
 #endif
 
-#include "systems/log.hpp"
+#include "core/log.hpp"
 
 #define CORE_LOG_TRACE(...) ::Rune::LogSystem::getCoreLogger()->trace(__VA_ARGS__)
 #define CORE_LOG_INFO(...) ::Rune::LogSystem::getCoreLogger()->info(__VA_ARGS__)

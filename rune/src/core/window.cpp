@@ -1,8 +1,8 @@
-#include "rune/systems/window.hpp"
+#include "rune/core/window.hpp"
 
 #include "rune/init.hpp"
 #include "rune/macros.hpp"
-#include "rune/systems/events/events.hpp"
+#include "rune/events/events.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rune/systems/assets/asset.hpp"
+#include "rune/assets/asset.hpp"
 
 namespace Rune
 {

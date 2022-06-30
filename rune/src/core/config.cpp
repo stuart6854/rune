@@ -1,4 +1,4 @@
-#include "rune/systems/config.hpp"
+#include "rune/core/config.hpp"
 
 #include "rune/macros.hpp"
 

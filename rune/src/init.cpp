@@ -1,14 +1,14 @@
 #include "rune/init.hpp"
 
 #include "rune/macros.hpp"
-#include "rune/systems/config.hpp"
-#include "rune/systems/graphics/graphics.hpp"
-#include "rune/systems/log.hpp"
-#include "rune/systems/time.hpp"
-#include "rune/systems/window.hpp"
-#include "rune/systems/assets/asset_factory.hpp"
-#include "rune/systems/events/events.hpp"
-#include "rune/systems/assets/asset_registry.hpp"
+#include "rune/core/config.hpp"
+#include "rune/core/log.hpp"
+#include "rune/core/time.hpp"
+#include "rune/core/window.hpp"
+#include "rune/graphics/graphics.hpp"
+#include "rune/assets/asset_factory.hpp"
+#include "rune/events/events.hpp"
+#include "rune/assets/asset_registry.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -63,11 +63,11 @@ namespace Rune
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
         assetRegistry.registerFactory<MeshFactory>(AssetType::eMesh);
 
-        //auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
+        // auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
         auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
         assetRegistry.load(textureHandle);
 
-        //auto meshHandle = assetRegistry.add("assets/models/pyramid/pyramid.fbx");
+        // auto meshHandle = assetRegistry.add("assets/models/pyramid/pyramid.fbx");
         auto meshHandle = assetRegistry.add("assets/models/backpack/backpack.obj");
         assetRegistry.load(meshHandle);
 

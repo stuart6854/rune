@@ -1,4 +1,4 @@
-#include "rune/systems/assets/asset_registry.hpp"
+#include "rune/assets/asset_registry.hpp"
 
 #include <filesystem>
 

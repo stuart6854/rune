@@ -1,6 +1,6 @@
-#include "rune/systems/graphics/mesh.hpp"
+#include "rune/graphics/mesh.hpp"
 
-#include "rune/systems/graphics/graphics.hpp"
+#include "rune/graphics/graphics.hpp"
 
 namespace Rune
 {

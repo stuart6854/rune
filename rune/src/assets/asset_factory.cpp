@@ -1,8 +1,8 @@
-#include "rune/systems/assets/asset_factory.hpp"
+#include "rune/assets/asset_factory.hpp"
 
 #include "rune/macros.hpp"
-#include "rune/systems/graphics/texture.hpp"
-#include "rune/systems/graphics/mesh.hpp"
+#include "rune/graphics/texture.hpp"
+#include "rune/graphics/mesh.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "assimp/scene.h"

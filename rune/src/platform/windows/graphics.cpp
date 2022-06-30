@@ -1,4 +1,4 @@
-#include "rune/systems/graphics/graphics.hpp"
+#include "rune/graphics/graphics.hpp"
 
 #include "renderer_opengl.hpp"
 

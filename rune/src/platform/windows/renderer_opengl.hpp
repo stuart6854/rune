@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rune/systems/graphics/graphics.hpp"
+#include "rune/graphics/graphics.hpp"
 #include "rune/utility/storage.hpp"
 
 #include <glad/glad.h>

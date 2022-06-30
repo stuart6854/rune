@@ -1,7 +1,7 @@
-#include "rune/systems/graphics/graphics.hpp"
+#include "rune/graphics/graphics.hpp"
 
 #include "rune/macros.hpp"
-#include "rune/systems/events/events.hpp"
+#include "rune/events/events.hpp"
 
 namespace Rune
 {

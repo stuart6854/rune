@@ -1,4 +1,4 @@
-#include "rune/systems/log.hpp"
+#include "rune/core/log.hpp"
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 

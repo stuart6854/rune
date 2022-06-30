@@ -1,6 +1,6 @@
-#include "rune/systems/graphics/texture.hpp"
+#include "rune/graphics/texture.hpp"
 
-#include "rune/systems/graphics/graphics.hpp"
+#include "rune/graphics/graphics.hpp"
 
 namespace Rune
 {

@@ -1,8 +1,8 @@
 #include "renderer_opengl.hpp"
 
 #include "rune/macros.hpp"
-#include "rune/systems/window.hpp"
-#include "rune/systems/graphics/vertex.hpp"
+#include "rune/core/window.hpp"
+#include "rune/graphics/vertex.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

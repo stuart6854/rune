@@ -1,4 +1,4 @@
-#include "rune/systems/time.hpp"
+#include "rune/core/time.hpp"
 
 #include <GLFW/glfw3.h>
 
