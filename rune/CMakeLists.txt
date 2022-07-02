@@ -46,6 +46,7 @@ file(GLOB
 	"${source_dir}/platform/${target_platform}/time.cpp"
 	"${source_dir}/platform/${target_platform}/graphics.cpp"
 	"${source_dir}/platform/opengl/renderer.cpp"
+	"${source_dir}/platform/opengl/shader_reflection.cpp"
 	"${GLAD_DIR}/src/glad.c"
 )
 
