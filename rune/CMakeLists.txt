@@ -19,6 +19,7 @@ set(SPDLOG_DIR "${LIB_DIR}/spdlog")
 set(TOML_DIR "${LIB_DIR}/tomlplusplus")
 set(STB_DIR "${LIB_DIR}/stb")
 set(ASSIMP_DIR "${LIB_DIR}/assimp")
+set(SPIRV_REFLECT_DIR "${LIB_DIR}/spirv_reflect")
 
 message("${SPDLOG_DIR}")
 
@@ -94,6 +95,7 @@ add_subdirectory(${GLM_DIR})
 add_subdirectory(${SPDLOG_DIR})
 add_subdirectory(${TOML_DIR})
 add_subdirectory(${ASSIMP_DIR})
+add_subdirectory(${SPIRV_REFLECT_DIR})
 
 # Define library
 add_library(rune)
@@ -133,3 +135,7 @@ target_include_directories(rune PUBLIC "${STB_DIR}/include")
 # Link assimp
 target_link_libraries(rune PUBLIC assimp::assimp)
 target_include_directories(rune PUBLIC "${ASSIMP_DIR}/include")
+
+# Link SPIRV_Reflect
+target_link_libraries(rune PUBLIC spirv_reflect)
+target_include_directories(rune PUBLIC "${SPIRV_REFLECT_DIR}")
