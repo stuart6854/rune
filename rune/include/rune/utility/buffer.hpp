@@ -20,6 +20,9 @@ namespace Rune
 
         void zeroInitialise() const;
 
+        template <typename T>
+        auto read(u32 offset = 0) const -> T&;
+
         auto readBytes(u32 size, u32 offset) const -> u8*;
         void write(const void* data, u32 size, u32 offset = 0) const;
 
@@ -29,4 +32,10 @@ namespace Rune
         void* m_data;
         u32 m_size;
     };
+
+    template <typename T>
+    auto Buffer::read(const u32 offset) const -> T&
+    {
+        return *(T*)((u8*)m_data + offset);
+    }
 }
