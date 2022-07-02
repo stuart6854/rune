@@ -8,10 +8,11 @@
 #include "rune/macros.hpp"
 
 #include <glad/glad.h>
+#include <spirv_reflect.h>
 
 #include <unordered_map>
 
-const auto vert_shader_src = R"(
+const std::string vert_shader_src = R"(
 #version 450 core
 
 layout (location = 0) in vec3 a_pos;
@@ -29,7 +30,7 @@ void main()
 }
 )";
 
-const auto frag_shader_src = R"(
+const std::string frag_shader_src = R"(
 #version 450 core
 
 layout(location = 0) in vec2 in_uv;
@@ -46,6 +47,28 @@ void main()
 )";
 
 GLuint shaderProgram;
+
+Rune::Shader shader;
+inline std::vector<u8> readFile(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open())
+    {
+        CORE_LOG_ERROR("Failed to open shader file: {}", filename);
+        return {};
+    }
+
+    size_t fileSize = (size_t)file.tellg();
+    std::vector<u8> buffer(fileSize);
+
+    file.seekg(0);
+    file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+
+    file.close();
+
+    return buffer;
+};
 
 namespace Rune
 {
@@ -163,6 +186,27 @@ namespace Rune
             }
             return GL_NONE;
         }
+
+        auto toUniformType(SpvReflectDescriptorType spirvType) -> BindingType
+        {
+            switch (spirvType)
+            {
+                case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return BindingType::eTexture;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: return BindingType::eUniformBuffer;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: break;
+                case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: break;
+                default: break;
+            }
+            return BindingType::eNone;
+        }
     }
 
     auto Renderer_OpenGL::create() -> Owned<RendererBase>
@@ -189,14 +233,21 @@ namespace Rune
         {
             // TODO: TEST CODE TO BE REMOVED
 
+            auto vertSrc = readFile("assets/default.vert.spv");
+            auto fragSrc = readFile("assets/default.frag.spv");
+
             u32 vertShader = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vertShader, 1, &vert_shader_src, nullptr);
-            glCompileShader(vertShader);
+            // glShaderSource(vertShader, 1, vert_shader_src.data(), nullptr);
+            glShaderBinary(1, &vertShader, GL_SHADER_BINARY_FORMAT_SPIR_V, vertSrc.data(), vertSrc.size() * sizeof(u8));
+            // glCompileShader(vertShader);
+            glSpecializeShader(vertShader, "main", 0, nullptr, nullptr);
             checkForShaderError(vertShader);
 
             u32 fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fragShader, 1, &frag_shader_src, nullptr);
-            glCompileShader(fragShader);
+            // glShaderSource(fragShader, 1, &frag_shader_src, nullptr);
+            glShaderBinary(1, &fragShader, GL_SHADER_BINARY_FORMAT_SPIR_V, fragSrc.data(), fragSrc.size() * sizeof(u8));
+            // glCompileShader(fragShader);
+            glSpecializeShader(fragShader, "main", 0, nullptr, nullptr);
             checkForShaderError(fragShader);
 
             shaderProgram = glCreateProgram();
@@ -207,6 +258,9 @@ namespace Rune
 
             glDeleteShader(vertShader);
             glDeleteShader(fragShader);
+
+            shader.init(vertSrc);
+            shader.setReflectionData(reflect(&shader));
         }
     }
 
@@ -256,7 +310,7 @@ namespace Rune
         auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
         auto mvp = proj * view;
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "u_mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "u_uniforms.mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
 
         auto& glMesh = m_data->meshes.at(mesh->getGuid());
 
@@ -284,6 +338,92 @@ namespace Rune
     void Renderer_OpenGL::destroying(const Texture* texture) {}
 
     void Renderer_OpenGL::changed(const Texture* texture) {}
+
+    void Renderer_OpenGL::destroying(const Shader* shader) {}
+
+    void Renderer_OpenGL::changed(const Shader* shader) {}
+
+    auto Renderer_OpenGL::reflect(const Shader* shader) -> ReflectionData
+    {
+        ReflectionData reflectionData;
+
+        /*GLuint programId = shaderProgram;
+
+        GLint uniformCount = 0;
+        glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, &uniformCount);
+
+        if (uniformCount != 0)
+        {
+            GLint maxNameLen = 0;  // The length of the longest uniform name
+            GLsizei length = 0;    // Length of the current uniforms name
+            GLsizei count = 0;
+            GLenum type = GL_NONE;
+            glGetProgramiv(programId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLen);
+
+            std::string nameBuffer;
+            nameBuffer.resize(maxNameLen);
+
+            reflectionData.buffers.emplace_back();
+
+            for (GLint i = 0; i < uniformCount; ++i)
+            {
+                glGetActiveUniform(programId, i, maxNameLen, &length, &count, &type, nameBuffer.data());
+
+                auto uniformName = std::string(nameBuffer.begin(), nameBuffer.begin() + length);
+
+                reflectionData.buffers[0].addUniform(uniformName);
+            }
+        }*/
+
+        spv_reflect::ShaderModule module(shader->getCode());
+        if (module.GetResult() != SPV_REFLECT_RESULT_SUCCESS)
+        {
+            CORE_LOG_ERROR("Failed to reflect shader!");
+            return {};
+        }
+
+        SpvReflectResult result{};
+
+        u32 count;
+        result = module.EnumerateDescriptorSets(&count, nullptr);
+        RUNE_ENG_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS, "");
+
+        std::vector<SpvReflectDescriptorSet*> sets(count);
+        result = module.EnumerateDescriptorSets(&count, sets.data());
+        RUNE_ENG_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS, "");
+
+        for (const auto& reflectedSet : sets)
+        {
+            auto& set = reflectionData.sets.emplace_back();
+            set.set = reflectedSet->set;
+
+            set.bindings.resize(reflectedSet->binding_count);
+            for (size bindingIndex = 0; bindingIndex < reflectedSet->binding_count; ++bindingIndex)
+            {
+                auto& reflectedBinding = reflectedSet->bindings[bindingIndex];
+
+                auto& binding = set.bindings[reflectedBinding->binding];
+                binding.set = reflectedBinding->set;
+                binding.binding = reflectedBinding->binding;
+                binding.name = reflectedBinding->name;
+                binding.type = toUniformType(reflectedBinding->descriptor_type);
+
+                binding.bufferSize = reflectedBinding->block.size;
+                binding.bufferMembers.resize(reflectedBinding->block.member_count);
+                for (size memberIndex = 0; memberIndex < binding.bufferMembers.size(); ++memberIndex)
+                {
+                    auto& reflectedMember = reflectedBinding->block.members[memberIndex];
+
+                    auto& member = binding.bufferMembers[memberIndex];
+                    member.name = reflectedMember.name;
+                    member.byteOffset = reflectedMember.offset;
+                    member.byteSize = reflectedMember.size;
+                }
+            }
+        }
+
+        return reflectionData;
+    }
 
     auto Renderer_OpenGL::createMesh(const Mesh* mesh) -> GlMesh
     {

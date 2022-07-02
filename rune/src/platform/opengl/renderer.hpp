@@ -28,6 +28,10 @@ namespace Rune
         void destroying(const Texture* texture) override;
         void changed(const Texture* texture) override;
 
+        void destroying(const Shader* shader) override;
+        void changed(const Shader* shader) override;
+        auto reflect(const Shader* shader) -> ReflectionData override;
+
     private:
         struct GlMesh
         {

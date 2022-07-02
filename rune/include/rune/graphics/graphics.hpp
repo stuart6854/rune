@@ -1,9 +1,9 @@
 #pragma once
 
-#include "mesh.hpp"
-#include "mesh.hpp"
-#include "texture.hpp"
 #include "rune/defines.hpp"
+#include "mesh.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 #include "texture.hpp"
 
 #include <functional>
@@ -55,7 +55,7 @@ namespace Rune
         WindowSystem* m_window;
     };
 
-    class RendererBase : public Mesh::Observer, public Texture::Observer
+    class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer
     {
     public:
         ~RendererBase() override = default;
@@ -76,6 +76,10 @@ namespace Rune
 
         void destroying(const Texture* texture) override = 0;
         void changed(const Texture* texture) override = 0;
+
+        void destroying(const Shader* shader) override = 0;
+        void changed(const Shader* shader) override = 0;
+        auto reflect(const Shader* shader) -> ReflectionData override = 0;
     };
 
 }

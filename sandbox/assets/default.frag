@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec2 in_uv;
 
-uniform sampler2D tex;
+layout(binding = 0) uniform sampler2D tex;
 
-out vec4 out_fragColor;
+layout (location = 0) out vec4 out_fragColor;
 
 void main()
 {
