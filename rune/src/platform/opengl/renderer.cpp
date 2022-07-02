@@ -6,6 +6,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "rune/macros.hpp"
+#include "rune/graphics/material.hpp"
 
 #include <glad/glad.h>
 #include <spirv_reflect.h>
@@ -49,6 +50,8 @@ void main()
 GLuint shaderProgram;
 
 Rune::Shader shader;
+Rune::Material material;
+
 inline std::vector<u8> readFile(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -261,6 +264,11 @@ namespace Rune
 
             shader.init(vertSrc);
             shader.setReflectionData(reflect(&shader));
+
+            material.setShader(&shader);
+
+            material.setFloat("test", 1998);
+            auto value = material.getFloat("test");
         }
     }
 

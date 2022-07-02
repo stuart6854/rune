@@ -36,6 +36,7 @@ file(GLOB
 	"${source_dir}/graphics/texture.cpp"
 	"${source_dir}/graphics/mesh.cpp"
 	"${source_dir}/graphics/shader.cpp"
+	"${source_dir}/graphics/material.cpp"
 	"${source_dir}/events/events.cpp"
 	"${source_dir}/assets/asset.cpp"
 	"${source_dir}/assets/asset_factory.cpp"
