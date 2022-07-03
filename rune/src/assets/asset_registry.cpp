@@ -24,7 +24,7 @@ namespace Rune
         return newGuid;
     }
 
-    auto AssetRegistry::add(const std::string& name, const Owned<Asset>& asset) -> AssetHandle
+    auto AssetRegistry::add(const std::string& name, Owned<Asset> asset) -> AssetHandle
     {
         auto& guid = asset->getGuid();
 
@@ -35,6 +35,10 @@ namespace Rune
         auto& metadata = m_assetMetadata[guid];
         metadata.guid = guid;
         metadata.type = asset->getType();
+        metadata.isLoaded = true;  // Always loaded
+
+        // Store the asset as loaded
+        m_loadedAssets[guid] = std::move(asset);
 
         return guid;
     }

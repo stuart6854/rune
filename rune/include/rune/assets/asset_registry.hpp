@@ -34,7 +34,7 @@ namespace Rune
         // TODO: init/cleanup
 
         auto add(const std::string& filename) -> AssetHandle;
-        auto add(const std::string& name, const Owned<Asset>& asset) -> AssetHandle;
+        auto add(const std::string& name, Owned<Asset> asset) -> AssetHandle;
 
         auto getHandle(const std::string& name) -> AssetHandle;
 
