@@ -51,6 +51,4 @@ namespace Rune
             observer->changed(this);
         }
     }
-
-    void Shader::onReflect() {}
 }

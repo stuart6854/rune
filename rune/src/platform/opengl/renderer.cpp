@@ -189,27 +189,6 @@ namespace Rune
             }
             return GL_NONE;
         }
-
-        auto toUniformType(SpvReflectDescriptorType spirvType) -> BindingType
-        {
-            switch (spirvType)
-            {
-                case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return BindingType::eTexture;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: return BindingType::eUniformBuffer;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: break;
-                case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: break;
-                default: break;
-            }
-            return BindingType::eNone;
-        }
     }
 
     auto Renderer_OpenGL::create() -> Owned<RendererBase>
@@ -350,88 +329,6 @@ namespace Rune
     void Renderer_OpenGL::destroying(const Shader* shader) {}
 
     void Renderer_OpenGL::changed(const Shader* shader) {}
-
-    auto Renderer_OpenGL::reflect(const Shader* shader) -> ReflectionData
-    {
-        ReflectionData reflectionData;
-
-        /*GLuint programId = shaderProgram;
-
-        GLint uniformCount = 0;
-        glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, &uniformCount);
-
-        if (uniformCount != 0)
-        {
-            GLint maxNameLen = 0;  // The length of the longest uniform name
-            GLsizei length = 0;    // Length of the current uniforms name
-            GLsizei count = 0;
-            GLenum type = GL_NONE;
-            glGetProgramiv(programId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLen);
-
-            std::string nameBuffer;
-            nameBuffer.resize(maxNameLen);
-
-            reflectionData.buffers.emplace_back();
-
-            for (GLint i = 0; i < uniformCount; ++i)
-            {
-                glGetActiveUniform(programId, i, maxNameLen, &length, &count, &type, nameBuffer.data());
-
-                auto uniformName = std::string(nameBuffer.begin(), nameBuffer.begin() + length);
-
-                reflectionData.buffers[0].addUniform(uniformName);
-            }
-        }*/
-
-        spv_reflect::ShaderModule module(shader->getCode());
-        if (module.GetResult() != SPV_REFLECT_RESULT_SUCCESS)
-        {
-            CORE_LOG_ERROR("Failed to reflect shader!");
-            return {};
-        }
-
-        SpvReflectResult result{};
-
-        u32 count;
-        result = module.EnumerateDescriptorSets(&count, nullptr);
-        RUNE_ENG_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS, "");
-
-        std::vector<SpvReflectDescriptorSet*> sets(count);
-        result = module.EnumerateDescriptorSets(&count, sets.data());
-        RUNE_ENG_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS, "");
-
-        for (const auto& reflectedSet : sets)
-        {
-            auto& set = reflectionData.sets.emplace_back();
-            set.set = reflectedSet->set;
-
-            set.bindings.resize(reflectedSet->binding_count);
-            for (size bindingIndex = 0; bindingIndex < reflectedSet->binding_count; ++bindingIndex)
-            {
-                auto& reflectedBinding = reflectedSet->bindings[bindingIndex];
-
-                auto& binding = set.bindings[reflectedBinding->binding];
-                binding.set = reflectedBinding->set;
-                binding.binding = reflectedBinding->binding;
-                binding.name = reflectedBinding->name;
-                binding.type = toUniformType(reflectedBinding->descriptor_type);
-
-                binding.bufferSize = reflectedBinding->block.size;
-                binding.bufferMembers.resize(reflectedBinding->block.member_count);
-                for (size memberIndex = 0; memberIndex < binding.bufferMembers.size(); ++memberIndex)
-                {
-                    auto& reflectedMember = reflectedBinding->block.members[memberIndex];
-
-                    auto& member = binding.bufferMembers[memberIndex];
-                    member.name = reflectedMember.name;
-                    member.byteOffset = reflectedMember.offset;
-                    member.byteSize = reflectedMember.size;
-                }
-            }
-        }
-
-        return reflectionData;
-    }
 
     auto Renderer_OpenGL::createMesh(const Mesh* mesh) -> GlMesh
     {

@@ -79,7 +79,6 @@ namespace Rune
 
         void destroying(const Shader* shader) override = 0;
         void changed(const Shader* shader) override = 0;
-        auto reflect(const Shader* shader) -> ReflectionData override = 0;
     };
 
 }

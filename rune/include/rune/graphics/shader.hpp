@@ -17,8 +17,6 @@ namespace Rune
 
             virtual void destroying(const Shader* shader) = 0;
             virtual void changed(const Shader* shader) = 0;
-
-            virtual auto reflect(const Shader* shader) -> ReflectionData = 0;
         };
 
     public:
@@ -35,7 +33,6 @@ namespace Rune
     protected:
         void onDestroying() const;
         void onChanged() const;
-        void onReflect();
 
     private:
         std::vector<Observer*> m_observers;

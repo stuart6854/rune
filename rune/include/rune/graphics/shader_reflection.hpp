@@ -7,6 +7,8 @@
 
 namespace Rune
 {
+    class Shader;
+
     struct Member
     {
         std::string name;
@@ -42,4 +44,10 @@ namespace Rune
     {
         std::vector<Set> sets;
     };
+
+    namespace ShaderReflection
+    {
+        auto reflect(const Shader* shader) -> ReflectionData;
+    }
+
 }
