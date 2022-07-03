@@ -236,18 +236,19 @@ namespace Rune
 
         auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
 
-        // Texture
+        // Uniform Buffers
+        for (const auto& uniformBuffer : glMaterialInst.uniformBuffers)
+        {
+            glUniformBlockBinding(glMaterial.program, 0, uniformBuffer.binding);
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.binding, uniformBuffer.bufferId);
+        }
+
+        // Textures
         for (const auto& slot : glMaterialInst.textureSlots)
         {
             glBindTextureUnit(slot.slot, slot.texId);
             glUniform1i(glGetUniformLocation(glMaterial.program, slot.name.c_str()), slot.slot);
         }
-
-        // MVP
-        auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-        auto mvp = proj * view;
-        glUniformMatrix4fv(glGetUniformLocation(glMaterial.program, "u_uniforms.mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
 
         auto& glMesh = m_data->meshes.at(mesh->getGuid());
 
@@ -430,11 +431,13 @@ namespace Rune
         for (size i = 0; i < baseUniformBuffers.size(); ++i)
         {
             // Set from Material Inst
-            const auto& buffer = instUniformBuffers[i];
+            const auto& uniformBuffer = instUniformBuffers[i];
 
+            glMaterialInst.uniformBuffers[i].binding = uniformBuffer.binding;
             // Create opengl buffer
-            glCreateBuffers(1, &glMaterialInst.uniformBuffers[i]);
-            glNamedBufferData(glMaterialInst.uniformBuffers[i], buffer.getSize(), buffer.getData(), GL_STATIC_DRAW);
+            glCreateBuffers(1, &glMaterialInst.uniformBuffers[i].bufferId);
+            glNamedBufferData(
+                glMaterialInst.uniformBuffers[i].bufferId, uniformBuffer.buffer.getSize(), uniformBuffer.buffer.getData(), GL_STATIC_DRAW);
         }
 
         /* Texture Slots */

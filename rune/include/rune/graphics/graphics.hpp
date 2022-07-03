@@ -1,16 +1,15 @@
 #pragma once
 
-#include "material.hpp"
 #include "rune/defines.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
-#include "texture.hpp"
 #include "texture.hpp"
 
 #include <functional>
 
 namespace Rune
 {
+    class MaterialInst;
     class WindowSystem;
 
     enum class RenderingApi : u8

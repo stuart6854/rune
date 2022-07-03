@@ -67,7 +67,12 @@ namespace Rune
         };
         struct GlMaterialInst
         {
-            std::vector<GLuint> uniformBuffers;
+            struct UniformBuffer
+            {
+                GLuint binding;
+                GLuint bufferId;
+            };
+            std::vector<UniformBuffer> uniformBuffers;
 
             struct TextureSlot
             {

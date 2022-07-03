@@ -1,7 +1,10 @@
 #pragma once
 
+#include "graphics.hpp"
 #include "rune/assets/asset.hpp"
 #include "rune/utility/buffer.hpp"
+
+#include <glm/mat4x4.hpp>
 
 #include <unordered_map>
 #include <vector>
@@ -18,6 +21,12 @@ namespace Rune
     class Material final : public Asset
     {
     public:
+        struct UniformBuffer
+        {
+            u32 binding;
+            Buffer buffer;
+        };
+
         struct TextureSlot
         {
             std::string name;
@@ -37,9 +46,12 @@ namespace Rune
         auto getFloat(const std::string& name) const -> float;
         void setFloat(const std::string& name, float value) const;
 
+        auto getMat4(const std::string& name) const -> glm::mat4;
+        void setMat4(const std::string& name, const glm::mat4& value) const;
+
         void setTexture(const std::string& name, Texture* texture);
 
-        auto getUniformBuffers() const -> const std::vector<Buffer>&;
+        auto getUniformBuffers() const -> const std::vector<UniformBuffer>&;
         auto getTextureSlots() const -> const std::vector<TextureSlot>&;
 
     private:
@@ -64,7 +76,7 @@ namespace Rune
         Owned<MaterialInst> m_defaultInstance = nullptr;
         std::vector<Owned<MaterialInst>> m_instances;
 
-        std::vector<Buffer> m_uniformBuffers;
+        std::vector<UniformBuffer> m_uniformBuffers;
         std::vector<TextureSlot> m_textures;
 
         std::unordered_map<std::string, UniformBufferMember> m_uniformMemberMap;
@@ -77,6 +89,12 @@ namespace Rune
     class MaterialInst final : public Asset
     {
     public:
+        struct UniformBuffer
+        {
+            u32 binding;
+            Buffer buffer;
+        };
+
         struct TextureSlot
         {
             std::string name;
@@ -94,7 +112,7 @@ namespace Rune
 
         void setTexture(const std::string& name, Texture* texture);
 
-        auto getUniformBuffers() const -> const std::vector<Buffer>&;
+        auto getUniformBuffers() const -> const std::vector<UniformBuffer>&;
         auto getTextureSlots() const -> const std::vector<TextureSlot>&;
 
     private:
@@ -112,7 +130,7 @@ namespace Rune
     private:
         Material* m_material = nullptr;
 
-        std::vector<Buffer> m_uniformBuffers;
+        std::vector<UniformBuffer> m_uniformBuffers;
         std::vector<TextureSlot> m_textures;
 
         std::unordered_map<std::string, UniformBufferMember> m_uniformMemberMap;

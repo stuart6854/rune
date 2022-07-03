@@ -11,7 +11,10 @@
 #include "rune/assets/asset_registry.hpp"
 #include "rune/graphics/material.hpp"
 
-#include <iostream>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_float4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
+
 #include <filesystem>
 
 namespace Rune
@@ -92,6 +95,11 @@ namespace Rune
         material->setShader(shader);
 
         material->setTexture("tex", texture);
+        // MVP
+        auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+        auto mvp = proj * view;
+        material->setMat4("u_uniforms.mvp", mvp);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });

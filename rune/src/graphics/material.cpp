@@ -3,6 +3,23 @@
 #include "rune/macros.hpp"
 #include "rune/graphics/shader.hpp"
 
+#define GET_UNIFORM(type)                                                     \
+    const auto* member = getUniformBufferMember(name);                        \
+    if (member == nullptr)                                                    \
+        return {};                                                            \
+                                                                              \
+    const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex]; \
+    auto value = uniformBuffer.buffer.read<type>(member->byteOffset);         \
+    return value
+
+#define SET_UNIFORM(type)                                                     \
+    const auto* member = getUniformBufferMember(name);                        \
+    if (member == nullptr)                                                    \
+        return;                                                               \
+                                                                              \
+    const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex]; \
+    uniformBuffer.buffer.write(&value, sizeof(type), member->byteOffset)
+
 namespace Rune
 {
     Material::~Material()
@@ -47,23 +64,22 @@ namespace Rune
 
     auto Material::getFloat(const std::string& name) const -> float
     {
-        const auto* member = getUniformBufferMember(name);
-        if (member == nullptr)
-            return 0;
-
-        const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        auto value = uniformBuffer.read<float>(member->byteOffset);
-        return value;
+        GET_UNIFORM(float);
     }
 
     void Material::setFloat(const std::string& name, const float value) const
     {
-        const auto* member = getUniformBufferMember(name);
-        if (member == nullptr)
-            return;
+        SET_UNIFORM(float);
+    }
 
-        const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        uniformBuffer.write(&value, sizeof(float), member->byteOffset);
+    auto Material::getMat4(const std::string& name) const -> glm::mat4
+    {
+        GET_UNIFORM(glm::mat4);
+    }
+
+    void Material::setMat4(const std::string& name, const glm::mat4& value) const
+    {
+        SET_UNIFORM(glm::mat4);
     }
 
     void Material::setTexture(const std::string& name, Texture* texture)
@@ -80,7 +96,7 @@ namespace Rune
         m_textures[textureSlot].texture = texture;
     }
 
-    auto Material::getUniformBuffers() const -> const std::vector<Buffer>&
+    auto Material::getUniformBuffers() const -> const std::vector<UniformBuffer>&
     {
         return m_uniformBuffers;
     }
@@ -103,7 +119,7 @@ namespace Rune
                     // Create buffer
                     u32 uniformBufferIndex = m_uniformBuffers.size();
                     auto& uniformBuffer = m_uniformBuffers.emplace_back();
-                    uniformBuffer.allocate(binding.bufferSize);
+                    uniformBuffer.buffer.allocate(binding.bufferSize);
 
                     for (const auto& bufferMember : binding.bufferMembers)
                     {
@@ -161,7 +177,7 @@ namespace Rune
             return 0;
 
         const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        auto value = uniformBuffer.read<float>(member->byteOffset);
+        auto value = uniformBuffer.buffer.read<float>(member->byteOffset);
         return value;
     }
 
@@ -172,7 +188,7 @@ namespace Rune
             return;
 
         const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        uniformBuffer.write(&value, sizeof(float), member->byteOffset);
+        uniformBuffer.buffer.write(&value, sizeof(float), member->byteOffset);
     }
 
     void MaterialInst::setTexture(const std::string& name, Texture* texture)
@@ -189,7 +205,7 @@ namespace Rune
         m_textures[textureSlot].texture = texture;
     }
 
-    auto MaterialInst::getUniformBuffers() const -> const std::vector<Buffer>&
+    auto MaterialInst::getUniformBuffers() const -> const std::vector<UniformBuffer>&
     {
         return m_uniformBuffers;
     }
@@ -201,7 +217,12 @@ namespace Rune
 
     void MaterialInst::initUniforms()
     {
-        m_uniformBuffers = m_material->getUniformBuffers();
+        m_uniformBuffers.resize(m_material->getUniformBuffers().size());
+        for (size i = 0; i < m_material->getUniformBuffers().size(); ++i)
+        {
+            m_uniformBuffers[i].binding = m_material->getUniformBuffers()[i].binding;
+            m_uniformBuffers[i].buffer = m_material->getUniformBuffers()[i].buffer;
+        }
 
         m_textures.resize(m_material->getTextureSlots().size());
         for (size i = 0; i < m_material->getTextureSlots().size(); ++i)
