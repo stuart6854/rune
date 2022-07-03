@@ -82,13 +82,13 @@ namespace Rune
         m_renderer->onFramebufferSize(width, height);
     }
 
-    void GraphicsSystem::render(Mesh* mesh, Texture* texture)
+    void GraphicsSystem::render(Mesh* mesh, MaterialInst* materialInst)
     {
         if (m_renderer == nullptr)
             return;
 
         m_renderer->beginFrame();
-        m_renderer->draw(mesh, texture);
+        m_renderer->draw(mesh, materialInst);
         m_renderer->endFrame();
     }
 }

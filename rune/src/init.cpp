@@ -9,6 +9,7 @@
 #include "rune/assets/asset_factory.hpp"
 #include "rune/events/events.hpp"
 #include "rune/assets/asset_registry.hpp"
+#include "rune/graphics/material.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -26,6 +27,7 @@ namespace Rune
         Mesh* mesh = nullptr;
         Texture* texture = nullptr;
         Shader* shader = nullptr;
+        Material* material = nullptr;
 
     }  // namespace
 
@@ -63,12 +65,13 @@ namespace Rune
         auto& graphicsInst = GraphicsSystem::getInstance();
         graphicsInst.init(RenderingApi::eOpenGL);
         graphicsInst.setWindow(&WindowSystem::getInstance());
-        
-        //TODO: AssetRegistry::getInstance().cleanup();
+
+        // TODO: AssetRegistry::getInstance().cleanup();
 
         auto& assetRegistry = AssetRegistry::getInstance();
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
         assetRegistry.registerFactory<MeshFactory>(AssetType::eMesh);
+        assetRegistry.registerFactory<ShaderFactory>(AssetType::eShader);
 
         // auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
         auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
@@ -83,6 +86,12 @@ namespace Rune
         auto shaderHandle = assetRegistry.add("assets/default.shader");
         assetRegistry.load(shaderHandle);
         shader = assetRegistry.get<Shader>(shaderHandle);
+
+        auto matHandle = assetRegistry.add("default_mat", CreateOwned<Material>());
+        material = assetRegistry.get<Material>(matHandle);
+        material->setShader(shader);
+
+        material->setTexture("tex", texture);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -99,7 +108,7 @@ namespace Rune
         cleanup();
 
         // Cleanup engine subsystems
-        //TODO: AssetRegistry::getInstance().cleanup();
+        // TODO: AssetRegistry::getInstance().cleanup();
         GraphicsSystem::getInstance().cleanup();
         WindowSystem::getInstance().cleanup();
         ConfigSystem::getInstance().cleanup();
@@ -114,7 +123,7 @@ namespace Rune
             WindowSystem::getInstance().update();
             sysUpdate();
             update();
-            GraphicsSystem::getInstance().render(mesh, texture);
+            GraphicsSystem::getInstance().render(mesh, material->getDefaultInstance());
         }
     }
 

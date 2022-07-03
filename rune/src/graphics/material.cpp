@@ -66,7 +66,29 @@ namespace Rune
         uniformBuffer.write(&value, sizeof(float), member->byteOffset);
     }
 
-    void Material::setTexture(const std::string& name, Texture* texture) {}
+    void Material::setTexture(const std::string& name, Texture* texture)
+    {
+        const auto it = m_textureMap.find(name);
+        if (it == m_textureMap.end())
+        {
+            CORE_LOG_WARN("Uniform texture '{}' does not exist!", name);
+            return;
+        }
+
+        const auto textureSlot = it->second;
+
+        m_textures[textureSlot].texture = texture;
+    }
+
+    auto Material::getUniformBuffers() const -> const std::vector<Buffer>&
+    {
+        return m_uniformBuffers;
+    }
+
+    auto Material::getTextureSlots() const -> const std::vector<Material::TextureSlot>&
+    {
+        return m_textures;
+    }
 
     void Material::initUniforms()
     {
@@ -97,7 +119,11 @@ namespace Rune
                 else if (binding.type == BindingType::eTexture)
                 {
                     auto textureIndex = m_textures.size();
-                    m_textures.emplace_back();
+
+                    auto& texture = m_textures.emplace_back();
+                    texture.name = binding.name;
+                    texture.binding = binding.binding;
+
                     m_textureMap[binding.name] = textureIndex;
                 }
             }
@@ -120,7 +146,12 @@ namespace Rune
     {
         m_material = material;
 
-        // Get default uniforms/textures from material
+        initUniforms();
+    }
+
+    auto MaterialInst::getMaterial() const -> Material*
+    {
+        return m_material;
     }
 
     auto MaterialInst::getFloat(const std::string& name) const -> float
@@ -155,7 +186,30 @@ namespace Rune
 
         const auto textureSlot = it->second;
 
-        m_textures[textureSlot] = texture;
+        m_textures[textureSlot].texture = texture;
+    }
+
+    auto MaterialInst::getUniformBuffers() const -> const std::vector<Buffer>&
+    {
+        return m_uniformBuffers;
+    }
+
+    auto MaterialInst::getTextureSlots() const -> const std::vector<MaterialInst::TextureSlot>&
+    {
+        return m_textures;
+    }
+
+    void MaterialInst::initUniforms()
+    {
+        m_uniformBuffers = m_material->getUniformBuffers();
+
+        m_textures.resize(m_material->getTextureSlots().size());
+        for (size i = 0; i < m_material->getTextureSlots().size(); ++i)
+        {
+            m_textures[i].name = m_material->getTextureSlots()[i].name;
+            m_textures[i].binding = m_material->getTextureSlots()[i].binding;
+            m_textures[i].texture = m_material->getTextureSlots()[i].texture;
+        }
     }
 
     auto MaterialInst::getUniformBufferMember(const std::string& name) const -> const MaterialInst::UniformBufferMember*

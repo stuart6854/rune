@@ -18,6 +18,14 @@ namespace Rune
     class Material final : public Asset
     {
     public:
+        struct TextureSlot
+        {
+            std::string name;
+            u32 binding;
+            Texture* texture;
+        };
+
+    public:
         ~Material() override;
 
         auto getShader() const -> Shader*;
@@ -25,11 +33,14 @@ namespace Rune
 
         auto getDefaultInstance() const -> MaterialInst*;
         auto createInstance() -> MaterialInst*;
-        
+
         auto getFloat(const std::string& name) const -> float;
         void setFloat(const std::string& name, float value) const;
 
         void setTexture(const std::string& name, Texture* texture);
+
+        auto getUniformBuffers() const -> const std::vector<Buffer>&;
+        auto getTextureSlots() const -> const std::vector<TextureSlot>&;
 
     private:
         void initUniforms();
@@ -54,7 +65,7 @@ namespace Rune
         std::vector<Owned<MaterialInst>> m_instances;
 
         std::vector<Buffer> m_uniformBuffers;
-        std::vector<Texture*> m_textures;
+        std::vector<TextureSlot> m_textures;
 
         std::unordered_map<std::string, UniformBufferMember> m_uniformMemberMap;
         std::unordered_map<std::string, size> m_textureMap;
@@ -63,17 +74,32 @@ namespace Rune
     /**
      * Created from a Material instance. Used to set uniforms/textures
      */
-    class MaterialInst final : Asset
+    class MaterialInst final : public Asset
     {
     public:
+        struct TextureSlot
+        {
+            std::string name;
+            u32 binding;
+            Texture* texture;
+        };
+
+    public:
         void init(Material* material);
+
+        auto getMaterial() const -> Material*;
 
         auto getFloat(const std::string& name) const -> float;
         void setFloat(const std::string& name, float value) const;
 
         void setTexture(const std::string& name, Texture* texture);
 
+        auto getUniformBuffers() const -> const std::vector<Buffer>&;
+        auto getTextureSlots() const -> const std::vector<TextureSlot>&;
+
     private:
+        void initUniforms();
+
         struct UniformBufferMember
         {
             u32 uniformBufferIndex;
@@ -87,7 +113,7 @@ namespace Rune
         Material* m_material = nullptr;
 
         std::vector<Buffer> m_uniformBuffers;
-        std::vector<Texture*> m_textures;
+        std::vector<TextureSlot> m_textures;
 
         std::unordered_map<std::string, UniformBufferMember> m_uniformMemberMap;
         std::unordered_map<std::string, size> m_textureMap;

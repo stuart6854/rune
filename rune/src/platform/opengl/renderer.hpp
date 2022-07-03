@@ -6,6 +6,9 @@
 
 namespace Rune
 {
+    class Material;
+    class MaterialInst;
+
     class Renderer_OpenGL : public RendererBase
     {
     public:
@@ -20,7 +23,7 @@ namespace Rune
         void beginFrame() override;
         void endFrame() override;
 
-        void draw(Mesh* mesh, Texture* texture) override;
+        void draw(Mesh* mesh, MaterialInst* materialInst) override;
 
         void destroying(const Mesh* mesh) override;
         void changed(const Mesh* mesh) override;
@@ -47,16 +50,46 @@ namespace Rune
 
         struct GlTexture
         {
-            GLuint id;
+            GLuint texId;
         };
 
-        static auto createTexture(const Texture* texture) -> GlTexture;
+        bool hasTexture(const Texture* texture) const;
+        auto getTexture(const Texture* texture) const -> const GlTexture*;
+        auto createTexture(const Texture* texture) const -> const GlTexture&;
         static void destroyTexture(const GlTexture& glTexture);
+
+        struct GlMaterial
+        {
+            GLuint program;
+
+            bool depthTest;
+            bool doubleSided;
+        };
+        struct GlMaterialInst
+        {
+            std::vector<GLuint> uniformBuffers;
+
+            struct TextureSlot
+            {
+                std::string name;
+                GLuint slot;
+                GLuint texId;
+            };
+            std::vector<TextureSlot> textureSlots;
+        };
+
+        static auto createMaterial(const Material* material) -> GlMaterial;
+        static auto destroyMaterial(const GlMaterial& glMaterial);
+
+        auto createMaterialInstance(const MaterialInst* materialInst) const -> GlMaterialInst;
+        auto destroyMaterialInstance(const GlMaterialInst& glMaterialInst);
 
     private:
         struct RendererData
         {
             std::unordered_map<Guid, GlTexture> textures;
+            std::unordered_map<Guid, GlMaterial> materials;
+            std::unordered_map<Guid, GlMaterialInst> materialInstances;
             std::unordered_map<Guid, GlMesh> meshes;
         };
 

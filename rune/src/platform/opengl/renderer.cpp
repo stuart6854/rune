@@ -1,5 +1,4 @@
 #include "renderer.hpp"
-#include "renderer.hpp"
 
 #include "GLFW/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -9,7 +8,6 @@
 #include "rune/graphics/material.hpp"
 
 #include <glad/glad.h>
-#include <spirv_reflect.h>
 
 #include <unordered_map>
 
@@ -46,32 +44,6 @@ void main()
 	out_fragColor = color; //vec4(1.0, 0.5, 0.2, 1.0);
 }
 )";
-
-GLuint shaderProgram;
-
-Rune::Shader shader;
-Rune::Material material;
-
-inline std::vector<u8> readFile(const std::string& filename)
-{
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open())
-    {
-        CORE_LOG_ERROR("Failed to open shader file: {}", filename);
-        return {};
-    }
-
-    size_t fileSize = (size_t)file.tellg();
-    std::vector<u8> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
-
-    file.close();
-
-    return buffer;
-};
 
 namespace Rune
 {
@@ -211,44 +183,6 @@ namespace Rune
 #endif
 
         glEnable(GL_DEPTH_TEST);
-
-        {
-            // TODO: TEST CODE TO BE REMOVED
-
-            auto vertSrc = readFile("assets/default.vert.spv");
-            auto fragSrc = readFile("assets/default.frag.spv");
-
-            u32 vertShader = glCreateShader(GL_VERTEX_SHADER);
-            // glShaderSource(vertShader, 1, vert_shader_src.data(), nullptr);
-            glShaderBinary(1, &vertShader, GL_SHADER_BINARY_FORMAT_SPIR_V, vertSrc.data(), vertSrc.size() * sizeof(u8));
-            // glCompileShader(vertShader);
-            glSpecializeShader(vertShader, "main", 0, nullptr, nullptr);
-            checkForShaderError(vertShader);
-
-            u32 fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-            // glShaderSource(fragShader, 1, &frag_shader_src, nullptr);
-            glShaderBinary(1, &fragShader, GL_SHADER_BINARY_FORMAT_SPIR_V, fragSrc.data(), fragSrc.size() * sizeof(u8));
-            // glCompileShader(fragShader);
-            glSpecializeShader(fragShader, "main", 0, nullptr, nullptr);
-            checkForShaderError(fragShader);
-
-            shaderProgram = glCreateProgram();
-            glAttachShader(shaderProgram, vertShader);
-            glAttachShader(shaderProgram, fragShader);
-            glLinkProgram(shaderProgram);
-            checkForProgramError(shaderProgram);
-
-            glDeleteShader(vertShader);
-            glDeleteShader(fragShader);
-
-            shader.init(vertSrc);
-            shader.setReflectionData(reflect(&shader));
-
-            material.setShader(&shader);
-
-            material.setFloat("test", 1998);
-            auto value = material.getFloat("test");
-        }
     }
 
     void Renderer_OpenGL::cleanup()
@@ -268,8 +202,9 @@ namespace Rune
 
     void Renderer_OpenGL::endFrame() {}
 
-    void Renderer_OpenGL::draw(Mesh* mesh, Texture* texture)
+    void Renderer_OpenGL::draw(Mesh* mesh, MaterialInst* materialInst)
     {
+        /* Mesh */
         if (!m_data->meshes.contains(mesh->getGuid()))
         {
             // Create OpenGL mesh
@@ -278,26 +213,41 @@ namespace Rune
             mesh->attachObserver(this);
         }
 
-        if (!m_data->textures.contains(texture->getGuid()))
+        /* Material Instance */
+        if (!m_data->materialInstances.contains(materialInst->getGuid()))
+        {
+            // Create OpenGL material instance
+            m_data->materialInstances.emplace(materialInst->getGuid(), createMaterialInstance(materialInst));
+
+            // materialInst->attachObserver(this); // TODO
+        }
+
+        /* Texture */
+        /*if (!m_data->textures.contains(texture->getGuid()))
         {
             // Create OpenGL texture
             m_data->textures.emplace(texture->getGuid(), createTexture(texture));
 
-            texture->attachObserver(this);
-        }
+            materialInst->attachObserver(this);
+        }*/
 
-        glUseProgram(shaderProgram);
+        auto& glMaterial = m_data->materials.at(materialInst->getMaterial()->getGuid());
+        glUseProgram(glMaterial.program);
+
+        auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
 
         // Texture
-        glBindTextureUnit(0, 1);
-        auto x = glGetUniformLocation(shaderProgram, "tex");
-        glUniform1i(x, 0);
+        for (const auto& slot : glMaterialInst.textureSlots)
+        {
+            glBindTextureUnit(slot.slot, slot.texId);
+            glUniform1i(glGetUniformLocation(glMaterial.program, slot.name.c_str()), slot.slot);
+        }
 
         // MVP
         auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
         auto mvp = proj * view;
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "u_uniforms.mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(glGetUniformLocation(glMaterial.program, "u_uniforms.mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
 
         auto& glMesh = m_data->meshes.at(mesh->getGuid());
 
@@ -376,7 +326,20 @@ namespace Rune
         glDeleteVertexArrays(1, &glMesh.vao);
     }
 
-    auto Renderer_OpenGL::createTexture(const Texture* texture) -> GlTexture
+    bool Renderer_OpenGL::hasTexture(const Texture* texture) const
+    {
+        return m_data->textures.contains(texture->getGuid());
+    }
+
+    auto Renderer_OpenGL::getTexture(const Texture* texture) const -> const Renderer_OpenGL::GlTexture*
+    {
+        if (hasTexture(texture))
+            return &m_data->textures.at(texture->getGuid());
+
+        return nullptr;
+    }
+
+    auto Renderer_OpenGL::createTexture(const Texture* texture) const -> const GlTexture&
     {
         GLuint textureId;
         glCreateTextures(GL_TEXTURE_2D, 1, &textureId);
@@ -396,11 +359,126 @@ namespace Rune
 
         glGenerateTextureMipmap(textureId);
 
-        return GlTexture{ textureId };
+        GlTexture glTexture{ textureId };
+
+        m_data->textures[texture->getGuid()] = glTexture;
+        return m_data->textures[texture->getGuid()];
     }
 
     void Renderer_OpenGL::destroyTexture(const Renderer_OpenGL::GlTexture& glTexture)
     {
-        glDeleteTextures(1, &glTexture.id);
+        glDeleteTextures(1, &glTexture.texId);
     }
+
+    auto Renderer_OpenGL::createMaterial(const Material* material) -> GlMaterial
+    {
+        GlMaterial glMaterial{};
+
+        auto* shader = material->getShader();
+        const auto& vertexCode = shader->getVertexCode();
+        const auto& fragmentCode = shader->getFragmentCode();
+
+        GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderBinary(1, &vertShader, GL_SHADER_BINARY_FORMAT_SPIR_V, vertexCode.data(), vertexCode.size() * sizeof(u8));
+        glSpecializeShader(vertShader, "main", 0, nullptr, nullptr);
+        checkForShaderError(vertShader);
+
+        GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderBinary(1, &fragShader, GL_SHADER_BINARY_FORMAT_SPIR_V, fragmentCode.data(), fragmentCode.size() * sizeof(u8));
+        glSpecializeShader(fragShader, "main", 0, nullptr, nullptr);
+        checkForShaderError(fragShader);
+
+        glMaterial.program = glCreateProgram();
+        glAttachShader(glMaterial.program, vertShader);
+        glAttachShader(glMaterial.program, fragShader);
+        glLinkProgram(glMaterial.program);
+        checkForProgramError(glMaterial.program);
+
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
+
+        return glMaterial;
+    }
+
+    auto Renderer_OpenGL::destroyMaterial(const GlMaterial& glMaterial) {}
+
+    auto Renderer_OpenGL::createMaterialInstance(const MaterialInst* materialInst) const -> GlMaterialInst
+    {
+        // Create the base material if it doesn't exist
+        auto* material = materialInst->getMaterial();
+        if (!m_data->materials.contains(material->getGuid()))
+        {
+            // Create OpenGL material
+            m_data->materials.emplace(material->getGuid(), createMaterial(material));
+
+            // material->attachObserver(this); // TODO
+        }
+
+        /* Create material instance */
+
+        const auto& baseUniformBuffers = material->getUniformBuffers();
+        const auto& baseTextureSlots = material->getTextureSlots();
+
+        const auto& instUniformBuffers = materialInst->getUniformBuffers();
+        const auto& instTextureSlots = materialInst->getTextureSlots();
+
+        GlMaterialInst glMaterialInst{};
+
+        /* Uniform Buffers */
+
+        glMaterialInst.uniformBuffers.resize(baseUniformBuffers.size());
+        for (size i = 0; i < baseUniformBuffers.size(); ++i)
+        {
+            // Set from Material Inst
+            const auto& buffer = instUniformBuffers[i];
+
+            // Create opengl buffer
+            glCreateBuffers(1, &glMaterialInst.uniformBuffers[i]);
+            glNamedBufferData(glMaterialInst.uniformBuffers[i], buffer.getSize(), buffer.getData(), GL_STATIC_DRAW);
+        }
+
+        /* Texture Slots */
+        glMaterialInst.textureSlots.resize(baseTextureSlots.size());
+        for (size i = 0; i < baseTextureSlots.size(); ++i)
+        {
+            const auto& baseSlot = baseTextureSlots[i];
+
+            /* Set from Material Base */
+
+            if (baseSlot.texture != nullptr)
+            {
+                // Create texture if it does not exist in OpenGL
+                GLuint textureId;
+                if (!hasTexture(baseSlot.texture))
+                    textureId = createTexture(baseSlot.texture).texId;
+                else
+                    textureId = getTexture(baseSlot.texture)->texId;
+
+                glMaterialInst.textureSlots[i] = { baseSlot.name, baseSlot.binding, textureId };
+            }
+
+            const auto& instSlot = instTextureSlots[i];
+
+            if (instSlot.texture != nullptr)
+            {
+                /* Overwrite with Material Inst (if different) */
+                if (instSlot.texture != baseSlot.texture)
+                {
+                    // Create texture if it does not exist in OpenGL
+                    GLuint textureId;
+                    if (!hasTexture(instSlot.texture))
+                        textureId = createTexture(instSlot.texture).texId;
+                    else
+                        textureId = getTexture(instSlot.texture)->texId;
+
+                    glMaterialInst.textureSlots[i] = { instSlot.name, instSlot.binding, textureId };
+                }
+            }
+        }
+
+        return glMaterialInst;
+    }
+
+    auto Renderer_OpenGL::destroyMaterialInstance(const GlMaterialInst& glMaterialInst) {}
+
 }

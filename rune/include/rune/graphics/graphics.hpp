@@ -1,5 +1,6 @@
 #pragma once
 
+#include "material.hpp"
 #include "rune/defines.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
@@ -41,7 +42,7 @@ namespace Rune
         auto getWindow() const -> WindowSystem*;
         void setWindow(WindowSystem* window);
 
-        void render(Mesh* mesh, Texture* texture);
+        void render(Mesh* mesh, MaterialInst* materialInst);
 
     private:
         static void initRendererFactories();
@@ -69,7 +70,7 @@ namespace Rune
         virtual void beginFrame() = 0;
         virtual void endFrame() = 0;
 
-        virtual void draw(Mesh* mesh, Texture* texture) = 0;
+        virtual void draw(Mesh* mesh, MaterialInst* materialInst) = 0;
 
         void destroying(const Mesh* mesh) override = 0;
         void changed(const Mesh* mesh) override = 0;
