@@ -8,6 +8,10 @@ namespace Rune
             return AssetType::eMesh;
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
             return AssetType::eTexture;
+        if (ext == ".shader")
+            return AssetType::eShader;
+        if (ext == ".mat")
+            return AssetType::eMaterial;
 
         return AssetType::eNone;
     }

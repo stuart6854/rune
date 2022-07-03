@@ -3,6 +3,7 @@
 #include "rune/macros.hpp"
 #include "rune/graphics/texture.hpp"
 #include "rune/graphics/mesh.hpp"
+#include "rune/graphics/shader.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "assimp/scene.h"
@@ -11,6 +12,11 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+
+#define TOML_EXCEPTIONS 0
+#include <toml++/toml.h>
+
+#include <filesystem>
 
 namespace Rune
 {
@@ -154,5 +160,54 @@ namespace Rune
         newMesh->apply();
 
         return std::move(newMesh);
+    }
+
+    auto ShaderFactory::createFromFile(const std::string& filename) -> Owned<Asset>
+    {
+        auto shader = CreateOwned<Shader>();
+
+        auto result = toml::parse_file(filename);
+        if (!result)
+        {
+            auto err = result.error().description();
+            CORE_LOG_ERROR("Failed to parse config file: {}\n{}", filename, err);
+            return nullptr;
+        }
+
+        auto& shaderDef = result.table();
+        auto& isCompiled = shaderDef["is_compiled"].as_boolean()->get();
+        auto& vertexFile = shaderDef["vertex"].as_string()->get();
+        auto& fragmentFile = shaderDef["fragment"].as_string()->get();
+
+        std::filesystem::path assetDirPath = filename;
+        assetDirPath = assetDirPath.parent_path();
+
+        shader->setIsCompiled(isCompiled);
+        shader->setVertexCode(readShaderSource(assetDirPath.string() + "/" + vertexFile));
+        shader->setFragmentCode(readShaderSource(assetDirPath.string() + "/" + fragmentFile));
+        shader->reflect();
+
+        return std::move(shader);
+    }
+
+    auto ShaderFactory::readShaderSource(const std::string& filename) -> std::vector<u8>
+    {
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open())
+        {
+            CORE_LOG_ERROR("Failed to open shader file: {}", filename);
+            return {};
+        }
+
+        size_t fileSize = (size_t)file.tellg();
+        std::vector<u8> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+
+        file.close();
+
+        return buffer;
     }
 }

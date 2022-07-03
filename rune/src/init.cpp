@@ -25,6 +25,7 @@ namespace Rune
 
         Mesh* mesh = nullptr;
         Texture* texture = nullptr;
+        Shader* shader = nullptr;
 
     }  // namespace
 
@@ -78,6 +79,10 @@ namespace Rune
         auto meshHandle = assetRegistry.add("assets/models/backpack/backpack.obj");
         assetRegistry.load(meshHandle);
         mesh = assetRegistry.get<Mesh>(meshHandle);
+
+        auto shaderHandle = assetRegistry.add("assets/default.shader");
+        assetRegistry.load(shaderHandle);
+        shader = assetRegistry.get<Shader>(shaderHandle);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });

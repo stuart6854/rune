@@ -20,12 +20,16 @@ namespace Rune
         };
 
     public:
-        void init(const std::vector<u8>& code);
+        void setIsCompiled(bool isCompiled);
+        void setVertexCode(const std::vector<u8>& code);
+        void setFragmentCode(const std::vector<u8>& code);
+        void reflect();
 
         void attachObserver(Observer* observer);
         void detachObserver(Observer* observer);
 
-        auto getCode() const -> const std::vector<u8>&;
+        auto getVertexCode() const -> const std::vector<u8>&;
+        auto getFragmentCode() const -> const std::vector<u8>&;
         auto getReflectionData() const -> const ReflectionData&;
 
         void setReflectionData(const ReflectionData& reflectionData);
@@ -37,7 +41,9 @@ namespace Rune
     private:
         std::vector<Observer*> m_observers;
 
-        std::vector<u8> m_code;
+        bool m_isCompiled;
+        std::vector<u8> m_vertexCode;
+        std::vector<u8> m_fragmentCode;
 
         ReflectionData m_reflectionData;
     };

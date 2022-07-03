@@ -12,6 +12,7 @@ namespace Rune
         eNone = 0,
         eMesh,
         eTexture,
+        eShader,
         eMaterial,
         eCount
     };

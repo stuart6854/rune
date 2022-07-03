@@ -1,8 +1,10 @@
 #pragma once
 
 #include "asset.hpp"
+#include "rune/macros.hpp"
 
 #include <string>
+#include <vector>
 
 namespace Rune
 {
@@ -26,6 +28,15 @@ namespace Rune
         auto createFromFile(const std::string& filename) -> Owned<Asset> override;
 
     private:
-
     };
+
+    class ShaderFactory : public AssetFactory
+    {
+    public:
+        auto createFromFile(const std::string& filename) -> Owned<Asset> override;
+
+    private:
+        static auto readShaderSource(const std::string& filename) -> std::vector<u8>;
+    };
+
 }

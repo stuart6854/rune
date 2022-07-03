@@ -4,9 +4,24 @@
 
 namespace Rune
 {
-    void Shader::init(const std::vector<u8>& code)
+    void Shader::setIsCompiled(const bool isCompiled)
     {
-        m_code = code;
+        m_isCompiled = isCompiled;
+    }
+
+    void Shader::setVertexCode(const std::vector<u8>& code)
+    {
+        m_vertexCode = code;
+    }
+
+    void Shader::setFragmentCode(const std::vector<u8>& code)
+    {
+        m_fragmentCode = code;
+    }
+
+    void Shader::reflect()
+    {
+        m_reflectionData = ShaderReflection::reflect(this);
     }
 
     void Shader::attachObserver(Observer* observer)
@@ -21,9 +36,14 @@ namespace Rune
             m_observers.erase(it);
     }
 
-    auto Shader::getCode() const -> const std::vector<u8>&
+    auto Shader::getVertexCode() const -> const std::vector<u8>&
     {
-        return m_code;
+        return m_vertexCode;
+    }
+
+    auto Shader::getFragmentCode() const -> const std::vector<u8>&
+    {
+        return m_fragmentCode;
     }
 
     auto Shader::getReflectionData() const -> const ReflectionData&
