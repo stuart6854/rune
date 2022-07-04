@@ -1,49 +1,12 @@
 #include "renderer.hpp"
 
-#include "GLFW/glfw3.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "rune/macros.hpp"
 #include "rune/graphics/material.hpp"
 
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <unordered_map>
-
-const std::string vert_shader_src = R"(
-#version 450 core
-
-layout (location = 0) in vec3 a_pos;
-layout (location = 1) in vec2 a_uv;
-layout (location = 2) in vec3 a_norm;
-
-layout(location = 0) out vec2 out_uv;
-
-uniform mat4 u_mvp;
-
-void main()
-{
-	out_uv = a_uv;
-	gl_Position = u_mvp * vec4(a_pos, 1.0);
-}
-)";
-
-const std::string frag_shader_src = R"(
-#version 450 core
-
-layout(location = 0) in vec2 in_uv;
-
-uniform sampler2D tex;
-
-out vec4 out_fragColor;
-
-void main()
-{
-	vec4 color = texture(tex, in_uv);
-	out_fragColor = color; //vec4(1.0, 0.5, 0.2, 1.0);
-}
-)";
 
 namespace Rune
 {
