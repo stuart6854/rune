@@ -102,7 +102,7 @@ namespace Rune
         auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
         vp = proj * view;
-        material->setMat4("u_uniforms.mvp", vp);
+        material->getDefaultInstance()->setMat4("u_uniforms.mvp", vp);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -113,9 +113,9 @@ namespace Rune
 
     void Game::sysUpdate()
     {
-        rotY +=  5.0f * Time::getDeltaTime();
-        auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, rotY, 0.0f));
-        material->setMat4("u_uniforms.mvp", vp * model);
+        rotY += 5.0f * Time::getDeltaTime();
+        auto model = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+        material->getDefaultInstance()->setMat4("u_uniforms.mvp", vp * model);
     }
 
     void Game::sysCleanup()

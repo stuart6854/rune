@@ -4,12 +4,12 @@
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
+#include "material.hpp"
 
 #include <functional>
 
 namespace Rune
 {
-    class MaterialInst;
     class WindowSystem;
 
     enum class RenderingApi : u8
@@ -55,7 +55,7 @@ namespace Rune
         WindowSystem* m_window;
     };
 
-    class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer
+    class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer, public MaterialInst::Observer
     {
     public:
         ~RendererBase() override = default;
@@ -79,6 +79,9 @@ namespace Rune
 
         void destroying(const Shader* shader) override = 0;
         void changed(const Shader* shader) override = 0;
+
+        void destroying(const MaterialInst* materialInst) override = 0;
+        void uniformChanged(const MaterialInst* materialInst, u32 bufferIndex, u32 offset, u32 size) override = 0;
     };
 
 }

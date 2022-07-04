@@ -172,23 +172,24 @@ namespace Rune
 
     auto MaterialInst::getFloat(const std::string& name) const -> float
     {
-        const auto* member = getUniformBufferMember(name);
-        if (member == nullptr)
-            return 0;
-
-        const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        auto value = uniformBuffer.buffer.read<float>(member->byteOffset);
-        return value;
+        GET_UNIFORM(float);
     }
 
     void MaterialInst::setFloat(const std::string& name, const float value) const
     {
-        const auto* member = getUniformBufferMember(name);
-        if (member == nullptr)
-            return;
+        SET_UNIFORM(float);
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
 
-        const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        uniformBuffer.buffer.write(&value, sizeof(float), member->byteOffset);
+    auto MaterialInst::getMat4(const std::string& name) const -> glm::mat4
+    {
+        GET_UNIFORM(glm::mat4);
+    }
+
+    void MaterialInst::setMat4(const std::string& name, const glm::mat4& value) const
+    {
+        SET_UNIFORM(glm::mat4);
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
     }
 
     void MaterialInst::setTexture(const std::string& name, Texture* texture)
@@ -215,8 +216,51 @@ namespace Rune
         return m_textures;
     }
 
+    void MaterialInst::attachObserver(Observer* observer)
+    {
+        m_observers.push_back(observer);
+    }
+
+    void MaterialInst::detachObserver(Observer* observer)
+    {
+        const auto it = std::ranges::find(m_observers, observer);
+        if (it != m_observers.end())
+            m_observers.erase(it);
+    }
+
     void MaterialInst::initUniforms()
     {
+        const auto& reflectionData = m_material->getShader()->getReflectionData();
+
+        for (const auto& set : reflectionData.sets)
+        {
+            for (const auto& binding : set.bindings)
+            {
+                if (binding.type == BindingType::eUniformBuffer)
+                {
+                    // Create buffer
+                    u32 uniformBufferIndex = m_uniformBuffers.size();
+
+                    for (const auto& bufferMember : binding.bufferMembers)
+                    {
+                        auto memberName = binding.name + "." + bufferMember.name;
+
+                        m_uniformMemberMap[memberName] = {
+                            uniformBufferIndex,
+                            bufferMember.byteOffset,
+                            bufferMember.byteSize,
+                        };
+                    }
+                }
+                else if (binding.type == BindingType::eTexture)
+                {
+                    auto textureIndex = m_textures.size();
+
+                    m_textureMap[binding.name] = textureIndex;
+                }
+            }
+        }
+
         m_uniformBuffers.resize(m_material->getUniformBuffers().size());
         for (size i = 0; i < m_material->getUniformBuffers().size(); ++i)
         {
@@ -243,5 +287,21 @@ namespace Rune
         }
 
         return &it->second;
+    }
+
+    void MaterialInst::onDestroying() const
+    {
+        for (const auto& observer : m_observers)
+        {
+            observer->destroying(this);
+        }
+    }
+
+    void MaterialInst::onUniformChanged(u32 bufferIndex, u32 offset, u32 size) const
+    {
+        for (const auto& observer : m_observers)
+        {
+            observer->uniformChanged(this, bufferIndex, offset, size);
+        }
     }
 }

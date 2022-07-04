@@ -182,7 +182,7 @@ namespace Rune
             // Create OpenGL material instance
             m_data->materialInstances.emplace(materialInst->getGuid(), createMaterialInstance(materialInst));
 
-            // materialInst->attachObserver(this); // TODO
+            materialInst->attachObserver(this);
         }
 
         /* Texture */
@@ -243,6 +243,16 @@ namespace Rune
     void Renderer_OpenGL::destroying(const Shader* shader) {}
 
     void Renderer_OpenGL::changed(const Shader* shader) {}
+
+    void Renderer_OpenGL::destroying(const MaterialInst* materialInst) {}
+
+    void Renderer_OpenGL::uniformChanged(const MaterialInst* materialInst, const u32 bufferIndex, const u32 offset, const u32 size)
+    {
+        const auto& buffer = materialInst->getUniformBuffers()[bufferIndex].buffer;
+
+        auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
+        glNamedBufferSubData(glMaterialInst.uniformBuffers[bufferIndex].bufferId, offset, size, buffer.getData());
+    }
 
     auto Renderer_OpenGL::createMesh(const Mesh* mesh) -> GlMesh
     {

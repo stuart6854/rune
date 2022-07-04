@@ -1,6 +1,5 @@
 #pragma once
 
-#include "graphics.hpp"
 #include "rune/assets/asset.hpp"
 #include "rune/utility/buffer.hpp"
 
@@ -89,6 +88,15 @@ namespace Rune
     class MaterialInst final : public Asset
     {
     public:
+        class Observer
+        {
+        public:
+            virtual ~Observer() = default;
+
+            virtual void destroying(const MaterialInst* materialInst) = 0;
+            virtual void uniformChanged(const MaterialInst* materialInst, u32 bufferIndex, u32 offset, u32 size) = 0;
+        };
+
         struct UniformBuffer
         {
             u32 binding;
@@ -110,10 +118,16 @@ namespace Rune
         auto getFloat(const std::string& name) const -> float;
         void setFloat(const std::string& name, float value) const;
 
+        auto getMat4(const std::string& name) const -> glm::mat4;
+        void setMat4(const std::string& name, const glm::mat4& value) const;
+
         void setTexture(const std::string& name, Texture* texture);
 
         auto getUniformBuffers() const -> const std::vector<UniformBuffer>&;
         auto getTextureSlots() const -> const std::vector<TextureSlot>&;
+
+        void attachObserver(Observer* observer);
+        void detachObserver(Observer* observer);
 
     private:
         void initUniforms();
@@ -127,7 +141,12 @@ namespace Rune
 
         auto getUniformBufferMember(const std::string& name) const -> const UniformBufferMember*;
 
+        void onDestroying() const;
+        void onUniformChanged(u32 bufferIndex, u32 offset, u32 size) const;
+
     private:
+        std::vector<Observer*> m_observers;
+
         Material* m_material = nullptr;
 
         std::vector<UniformBuffer> m_uniformBuffers;

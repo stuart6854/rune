@@ -34,6 +34,9 @@ namespace Rune
         void destroying(const Shader* shader) override;
         void changed(const Shader* shader) override;
 
+        void destroying(const MaterialInst* materialInst) override;
+        void uniformChanged(const MaterialInst* materialInst, u32 bufferIndex, u32 offset, u32 size) override;
+
     private:
         struct GlMesh
         {
