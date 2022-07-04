@@ -32,6 +32,9 @@ namespace Rune
         Shader* shader = nullptr;
         Material* material = nullptr;
 
+        float rotY = 0;
+        glm::mat4 vp;
+
     }  // namespace
 
     void Game::sysInit()
@@ -98,8 +101,8 @@ namespace Rune
         // MVP
         auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-        auto mvp = proj * view;
-        material->setMat4("u_uniforms.mvp", mvp);
+        vp = proj * view;
+        material->setMat4("u_uniforms.mvp", vp);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -108,7 +111,12 @@ namespace Rune
         init();
     }
 
-    void Game::sysUpdate() {}
+    void Game::sysUpdate()
+    {
+        rotY +=  5.0f * Time::getDeltaTime();
+        auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, rotY, 0.0f));
+        material->setMat4("u_uniforms.mvp", vp * model);
+    }
 
     void Game::sysCleanup()
     {
