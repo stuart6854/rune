@@ -155,7 +155,10 @@ namespace Rune
 
     void Renderer_OpenGL::setWindow(WindowSystem* window) {}
 
-    void Renderer_OpenGL::onFramebufferSize(i32 width, i32 height) {}
+    void Renderer_OpenGL::onFramebufferSize(const i32 width, const i32 height)
+    {
+        glViewport(0, 0, width, height);
+    }
 
     void Renderer_OpenGL::beginFrame()
     {
