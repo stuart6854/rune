@@ -74,21 +74,45 @@ namespace Rune
         m_renderer->setWindow(m_window);
     }
 
+    void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view)
+    {
+        m_projView = proj * view;
+    }
+
+    void GraphicsSystem::addRenderable(const Renderable& renderable)
+    {
+        // TODO: Check if can be Frustum culled?
+
+        auto& internalRenderable = m_geometryBucket.emplace_back();
+        internalRenderable.mesh = renderable.mesh;
+        internalRenderable.materialInst = renderable.materialInst;
+        internalRenderable.mvp = m_projView * renderable.modelMatrix;
+    }
+
+    void GraphicsSystem::render()
+    {
+        if (m_renderer == nullptr)
+            return;
+
+        m_renderer->beginFrame();
+
+        for (const auto& renderable : m_geometryBucket)
+        {
+            renderable.materialInst->setMat4("u_uniforms.mvp", renderable.mvp);
+
+            m_renderer->draw(renderable.mesh, renderable.materialInst);
+        }
+
+        m_renderer->endFrame();
+
+        m_geometryBucket.clear();
+    }
+
     void GraphicsSystem::onFramebufferSize(const i32 width, const i32 height) const
     {
         if (m_renderer == nullptr)
             return;
 
         m_renderer->onFramebufferSize(width, height);
-    }
-
-    void GraphicsSystem::render(Mesh* mesh, MaterialInst* materialInst)
-    {
-        if (m_renderer == nullptr)
-            return;
-
-        m_renderer->beginFrame();
-        m_renderer->draw(mesh, materialInst);
-        m_renderer->endFrame();
     }
 }

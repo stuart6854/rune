@@ -22,6 +22,14 @@ namespace Rune
 
     class RendererBase;
 
+    struct Renderable
+    {
+        Mesh* mesh;
+        MaterialInst* materialInst;
+
+        glm::mat4 modelMatrix;
+    };
+
     class GraphicsSystem
     {
     public:
@@ -41,7 +49,11 @@ namespace Rune
         auto getWindow() const -> WindowSystem*;
         void setWindow(WindowSystem* window);
 
-        void render(Mesh* mesh, MaterialInst* materialInst);
+        void beginScene(const glm::mat4 proj, const glm::mat4& view);
+
+        void addRenderable(const Renderable& renderable);
+
+        void render();
 
     private:
         static void initRendererFactories();
@@ -53,6 +65,17 @@ namespace Rune
         Owned<RendererBase> m_renderer;
 
         WindowSystem* m_window;
+
+        glm::mat4 m_projView;
+
+        struct InternalRenderable
+        {
+            Mesh* mesh;
+            MaterialInst* materialInst;
+            glm::mat4 mvp;
+        };
+        std::vector<InternalRenderable> m_shadowBucket;
+        std::vector<InternalRenderable> m_geometryBucket;
     };
 
     class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer, public MaterialInst::Observer

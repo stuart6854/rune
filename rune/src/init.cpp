@@ -33,8 +33,8 @@ namespace Rune
         Material* material = nullptr;
 
         float rotY = 0;
-        glm::mat4 vp;
-
+        glm::mat4 proj;
+        glm::mat4 view;
     }  // namespace
 
     void Game::sysInit()
@@ -99,10 +99,8 @@ namespace Rune
 
         material->setTexture("tex", texture);
         // MVP
-        auto proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-        vp = proj * view;
-        material->getDefaultInstance()->setMat4("u_uniforms.mvp", vp);
+        proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+        view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -113,9 +111,11 @@ namespace Rune
 
     void Game::sysUpdate()
     {
+        GraphicsSystem::getInstance().beginScene(proj, view);
+
         rotY += 5.0f * Time::getDeltaTime();
         auto model = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
-        material->getDefaultInstance()->setMat4("u_uniforms.mvp", vp * model);
+        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), model });
     }
 
     void Game::sysCleanup()
@@ -139,7 +139,7 @@ namespace Rune
             WindowSystem::getInstance().update();
             sysUpdate();
             update();
-            GraphicsSystem::getInstance().render(mesh, material->getDefaultInstance());
+            GraphicsSystem::getInstance().render();
         }
     }
 
