@@ -119,6 +119,7 @@ namespace Rune
                     // Create buffer
                     u32 uniformBufferIndex = m_uniformBuffers.size();
                     auto& uniformBuffer = m_uniformBuffers.emplace_back();
+                    uniformBuffer.binding = binding.binding;
                     uniformBuffer.buffer.allocate(binding.bufferSize);
 
                     for (const auto& bufferMember : binding.bufferMembers)
@@ -240,6 +241,9 @@ namespace Rune
                 {
                     // Create buffer
                     u32 uniformBufferIndex = m_uniformBuffers.size();
+                    auto& uniformBuffer = m_uniformBuffers.emplace_back();
+                    uniformBuffer.binding = binding.binding;
+                    uniformBuffer.buffer.allocate(binding.bufferSize);
 
                     for (const auto& bufferMember : binding.bufferMembers)
                     {
@@ -256,23 +260,23 @@ namespace Rune
                 {
                     auto textureIndex = m_textures.size();
 
+                    auto& texture = m_textures.emplace_back();
+                    texture.name = binding.name;
+                    texture.binding = binding.binding;
+
                     m_textureMap[binding.name] = textureIndex;
                 }
             }
         }
 
-        m_uniformBuffers.resize(m_material->getUniformBuffers().size());
+        // Copy uniform buffers and textures over
         for (size i = 0; i < m_material->getUniformBuffers().size(); ++i)
         {
-            m_uniformBuffers[i].binding = m_material->getUniformBuffers()[i].binding;
             m_uniformBuffers[i].buffer = m_material->getUniformBuffers()[i].buffer;
         }
-
-        m_textures.resize(m_material->getTextureSlots().size());
+        
         for (size i = 0; i < m_material->getTextureSlots().size(); ++i)
         {
-            m_textures[i].name = m_material->getTextureSlots()[i].name;
-            m_textures[i].binding = m_material->getTextureSlots()[i].binding;
             m_textures[i].texture = m_material->getTextureSlots()[i].texture;
         }
     }
