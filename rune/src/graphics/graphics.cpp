@@ -86,7 +86,8 @@ namespace Rune
         auto& internalRenderable = m_geometryBucket.emplace_back();
         internalRenderable.mesh = renderable.mesh;
         internalRenderable.materialInst = renderable.materialInst;
-        internalRenderable.mvp = m_projView * renderable.modelMatrix;
+        internalRenderable.projView = m_projView;
+        internalRenderable.model = renderable.modelMatrix;
     }
 
     void GraphicsSystem::render()
@@ -98,7 +99,8 @@ namespace Rune
 
         for (const auto& renderable : m_geometryBucket)
         {
-            renderable.materialInst->setMat4("u_uniforms.mvp", renderable.mvp);
+            renderable.materialInst->setMat4("u_renderer.viewProj", renderable.projView);
+            renderable.materialInst->setMat4("u_object.model", renderable.model);
 
             m_renderer->draw(renderable.mesh, renderable.materialInst);
         }

@@ -72,7 +72,8 @@ namespace Rune
         {
             Mesh* mesh;
             MaterialInst* materialInst;
-            glm::mat4 mvp;
+            glm::mat4 projView;
+            glm::mat4 model;
         };
         std::vector<InternalRenderable> m_shadowBucket;
         std::vector<InternalRenderable> m_geometryBucket;
