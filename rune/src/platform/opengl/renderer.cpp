@@ -254,7 +254,7 @@ namespace Rune
         const auto& buffer = materialInst->getUniformBuffers()[bufferIndex].buffer;
 
         auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
-        glNamedBufferSubData(glMaterialInst.uniformBuffers[bufferIndex].bufferId, offset, size, buffer.getData());
+        glNamedBufferSubData(glMaterialInst.uniformBuffers[bufferIndex].bufferId, offset, size, buffer.readBytes(size, offset));
     }
 
     auto Renderer_OpenGL::createMesh(const Mesh* mesh) -> GlMesh
