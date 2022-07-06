@@ -205,7 +205,6 @@ namespace Rune
         // Uniform Buffers
         for (const auto& uniformBuffer : glMaterialInst.uniformBuffers)
         {
-            glUniformBlockBinding(glMaterial.program, 0, uniformBuffer.binding);
             glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.binding, uniformBuffer.bufferId);
         }
 
