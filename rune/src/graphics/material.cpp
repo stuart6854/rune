@@ -3,6 +3,8 @@
 #include "rune/macros.hpp"
 #include "rune/graphics/shader.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #define GET_UNIFORM(type)                                                     \
     const auto* member = getUniformBufferMember(name);                        \
     if (member == nullptr)                                                    \
@@ -12,13 +14,13 @@
     auto value = uniformBuffer.buffer.read<type>(member->byteOffset);         \
     return value
 
-#define SET_UNIFORM(type)                                                     \
+#define SET_UNIFORM(type, value_ptr)                                          \
     const auto* member = getUniformBufferMember(name);                        \
     if (member == nullptr)                                                    \
         return;                                                               \
                                                                               \
     const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex]; \
-    uniformBuffer.buffer.write(&value, sizeof(type), member->byteOffset)
+    uniformBuffer.buffer.write(value_ptr, sizeof(type), member->byteOffset)
 
 namespace Rune
 {
@@ -69,7 +71,7 @@ namespace Rune
 
     void Material::setFloat(const std::string& name, const float value) const
     {
-        SET_UNIFORM(float);
+        SET_UNIFORM(float, &value);
     }
 
     auto Material::getMat4(const std::string& name) const -> glm::mat4
@@ -79,7 +81,7 @@ namespace Rune
 
     void Material::setMat4(const std::string& name, const glm::mat4& value) const
     {
-        SET_UNIFORM(glm::mat4);
+        SET_UNIFORM(glm::mat4, glm::value_ptr(value));
     }
 
     void Material::setTexture(const std::string& name, Texture* texture)
@@ -171,6 +173,17 @@ namespace Rune
         return m_material;
     }
 
+    auto MaterialInst::getInt(const std::string& name) const -> i32
+    {
+        GET_UNIFORM(i32);
+    }
+
+    void MaterialInst::setInt(const std::string& name, const i32 value) const
+    {
+        SET_UNIFORM(i32, &value);
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
+
     auto MaterialInst::getFloat(const std::string& name) const -> float
     {
         GET_UNIFORM(float);
@@ -178,7 +191,41 @@ namespace Rune
 
     void MaterialInst::setFloat(const std::string& name, const float value) const
     {
-        SET_UNIFORM(float);
+        SET_UNIFORM(float, &value);
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
+
+    auto MaterialInst::getFloat2(const std::string& name) const -> glm::vec2
+    {
+        GET_UNIFORM(glm::vec2);
+    }
+
+    void MaterialInst::setFloat2(const std::string& name, const glm::vec2& value) const
+    {
+        SET_UNIFORM(glm::vec2, glm::value_ptr(value));
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
+
+    auto MaterialInst::getFloat3(const std::string& name) const -> glm::vec3
+    {
+        GET_UNIFORM(glm::vec3);
+    }
+
+    void MaterialInst::setFloat3(const std::string& name, const glm::vec3& value) const
+    {
+        SET_UNIFORM(glm::vec3, glm::value_ptr(value));
+        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
+
+    auto MaterialInst::getFloat4(const std::string& name) const -> glm::vec4
+    {
+        GET_UNIFORM(glm::vec4);
+    }
+
+    void MaterialInst::setFloat4(const std::string& name, const glm::vec4& value) const
+    {
+        SET_UNIFORM(glm::vec4, glm::value_ptr(value));
         onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
     }
 
@@ -189,8 +236,25 @@ namespace Rune
 
     void MaterialInst::setMat4(const std::string& name, const glm::mat4& value) const
     {
-        SET_UNIFORM(glm::mat4);
+        SET_UNIFORM(glm::mat4, glm::value_ptr(value));
         onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+    }
+
+    auto MaterialInst::getData(const std::string& name) const -> const void*
+    {
+        GET_UNIFORM(const void*);
+    }
+
+    void MaterialInst::setData(const std::string& name, const i32 size, const void* data) const
+    {
+        const auto* member = getUniformBufferMember(name);
+        if (member == nullptr)
+            return;
+
+        RUNE_ENG_ASSERT(size <= member->byteSize, "Uniform write size overflow!");
+
+        const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
+        uniformBuffer.buffer.write(data, size, member->byteOffset);
     }
 
     void MaterialInst::setTexture(const std::string& name, Texture* texture)
@@ -274,7 +338,7 @@ namespace Rune
         {
             m_uniformBuffers[i].buffer = m_material->getUniformBuffers()[i].buffer;
         }
-        
+
         for (size i = 0; i < m_material->getTextureSlots().size(); ++i)
         {
             m_textures[i].texture = m_material->getTextureSlots()[i].texture;

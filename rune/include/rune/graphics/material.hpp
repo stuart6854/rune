@@ -115,11 +115,26 @@ namespace Rune
 
         auto getMaterial() const -> Material*;
 
+        auto getInt(const std::string& name) const -> i32;
+        void setInt(const std::string& name, i32 value) const;
+
         auto getFloat(const std::string& name) const -> float;
         void setFloat(const std::string& name, float value) const;
 
+        auto getFloat2(const std::string& name) const -> glm::vec2;
+        void setFloat2(const std::string& name, const glm::vec2& value) const;
+
+        auto getFloat3(const std::string& name) const -> glm::vec3;
+        void setFloat3(const std::string& name, const glm::vec3& value) const;
+
+        auto getFloat4(const std::string& name) const -> glm::vec4;
+        void setFloat4(const std::string& name, const glm::vec4& value) const;
+
         auto getMat4(const std::string& name) const -> glm::mat4;
         void setMat4(const std::string& name, const glm::mat4& value) const;
+
+        auto getData(const std::string& name) const -> const void*;
+        void setData(const std::string& name, i32 size, const void* data) const;
 
         void setTexture(const std::string& name, Texture* texture);
 
