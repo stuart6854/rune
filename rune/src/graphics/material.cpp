@@ -181,7 +181,7 @@ namespace Rune
     void MaterialInst::setInt(const std::string& name, const i32 value) const
     {
         SET_UNIFORM(i32, &value);
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getFloat(const std::string& name) const -> float
@@ -192,8 +192,7 @@ namespace Rune
     void MaterialInst::setFloat(const std::string& name, const float value) const
     {
         SET_UNIFORM(float, &value);
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getFloat2(const std::string& name) const -> glm::vec2
@@ -204,7 +203,7 @@ namespace Rune
     void MaterialInst::setFloat2(const std::string& name, const glm::vec2& value) const
     {
         SET_UNIFORM(glm::vec2, glm::value_ptr(value));
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getFloat3(const std::string& name) const -> glm::vec3
@@ -215,7 +214,7 @@ namespace Rune
     void MaterialInst::setFloat3(const std::string& name, const glm::vec3& value) const
     {
         SET_UNIFORM(glm::vec3, glm::value_ptr(value));
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getFloat4(const std::string& name) const -> glm::vec4
@@ -226,7 +225,7 @@ namespace Rune
     void MaterialInst::setFloat4(const std::string& name, const glm::vec4& value) const
     {
         SET_UNIFORM(glm::vec4, glm::value_ptr(value));
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getMat4(const std::string& name) const -> glm::mat4
@@ -237,7 +236,7 @@ namespace Rune
     void MaterialInst::setMat4(const std::string& name, const glm::mat4& value) const
     {
         SET_UNIFORM(glm::mat4, glm::value_ptr(value));
-        onUniformChanged(uniformBuffer.binding, member->byteOffset, member->byteSize);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     auto MaterialInst::getData(const std::string& name) const -> const void*
@@ -255,6 +254,7 @@ namespace Rune
 
         const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
         uniformBuffer.buffer.write(data, size, member->byteOffset);
+        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
     }
 
     void MaterialInst::setTexture(const std::string& name, Texture* texture)
