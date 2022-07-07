@@ -101,7 +101,9 @@ namespace Rune
         // MVP
         float aspect = static_cast<float>(props.width) / static_cast<float>(props.height);
         projMatrix = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f);
-        viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+
+        auto cameraPosition = glm::vec3(0, 0, -5.0f);
+        viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), cameraPosition));
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -115,7 +117,13 @@ namespace Rune
         GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix);
 
         rotY += 5.0f * Time::getDeltaTime();
-        auto worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+        // auto worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+        auto worldMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f, 0.2f, 0.2f));
+        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
+
+        worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
+        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
+        worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 2));
         GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
     }
 

@@ -123,6 +123,7 @@ target_include_directories(rune PUBLIC "${GLAD_DIR}/include")
 # Link glm
 target_link_libraries(rune PUBLIC glm)
 target_include_directories(rune PUBLIC "${GLM_DIR}/include")
+target_compile_definitions(rune PUBLIC "GLM_FORCE_RADIANS" "GLM_FORCE_LEFT_HANDED")
 
 # Link spdlog
 target_link_libraries(rune PUBLIC spdlog::spdlog)
