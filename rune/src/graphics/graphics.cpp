@@ -76,7 +76,8 @@ namespace Rune
 
     void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view)
     {
-        m_projView = proj * view;
+        m_proj = proj;
+        m_view = view;
     }
 
     void GraphicsSystem::addRenderable(const Renderable& renderable)
@@ -86,8 +87,9 @@ namespace Rune
         auto& internalRenderable = m_geometryBucket.emplace_back();
         internalRenderable.mesh = renderable.mesh;
         internalRenderable.materialInst = renderable.materialInst;
-        internalRenderable.projView = m_projView;
-        internalRenderable.model = renderable.modelMatrix;
+        internalRenderable.world = renderable.worldMatrix;
+        internalRenderable.view = m_view;
+        internalRenderable.proj = m_proj;
     }
 
     void GraphicsSystem::render()
@@ -97,16 +99,37 @@ namespace Rune
 
         m_renderer->beginFrame();
 
+        {
+            // TODO: TEMPORARY
+            m_lightingData.viewPos = { 0, 0, 0 };
+            m_lightingData.ambient = { 0.1f, 0.1f, 0.1f };
+            m_lightingData.lightCount = 1;
+            m_lightingData.lights[0].position = { 5, 5, -3, 1 };
+             m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
+            //m_lightingData.lights[0].direction = {};
+            m_lightingData.lights[0].diffuse = { 1, 1, 1, 1 };
+            m_lightingData.lights[0].specular = { 1, 1, 1, 1 };
+        }
+
         for (const auto& renderable : m_geometryBucket)
         {
-            renderable.materialInst->setMat4("u_renderer.viewProj", renderable.projView);
-            renderable.materialInst->setMat4("u_object.model", renderable.model);
+            renderable.materialInst->setMat4("u_renderer.worldMatrix", renderable.world);
+            renderable.materialInst->setMat4("u_renderer.viewMatrix", renderable.view);
+            renderable.materialInst->setMat4("u_renderer.projMatrix", renderable.proj);
+            renderable.materialInst->setFloat3("u_lighting.viewPos", m_lightingData.viewPos);
+            renderable.materialInst->setFloat3("u_lighting.ambient", m_lightingData.ambient);
+            renderable.materialInst->setInt("u_lighting.lightCount", m_lightingData.lightCount);
+            renderable.materialInst->setData("u_lighting.lights", sizeof(m_lightingData.lights), m_lightingData.lights.data());
+
+            renderable.materialInst->setFloat3("u_material.diffuse", { 1, 1, 1 });
+            renderable.materialInst->setFloat("u_material.shininess", 32);
 
             m_renderer->draw(renderable.mesh, renderable.materialInst);
         }
 
         m_renderer->endFrame();
 
+        m_lightingData.lightCount = 0;
         m_geometryBucket.clear();
     }
 

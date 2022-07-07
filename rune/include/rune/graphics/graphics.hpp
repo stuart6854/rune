@@ -6,6 +6,7 @@
 #include "texture.hpp"
 #include "material.hpp"
 
+#include <array>
 #include <functional>
 
 namespace Rune
@@ -22,12 +23,26 @@ namespace Rune
 
     class RendererBase;
 
+    struct Light
+    {
+        glm::vec3 position;
+        bool isDirectional;
+        glm::vec3 direction;
+
+        float constant;
+        float linear;
+        float quadratic;
+
+        glm::vec3 diffuseColor;
+        glm::vec3 specularColor;
+    };
+
     struct Renderable
     {
         Mesh* mesh;
         MaterialInst* materialInst;
 
-        glm::mat4 modelMatrix;
+        glm::mat4 worldMatrix;
     };
 
     class GraphicsSystem
@@ -66,14 +81,32 @@ namespace Rune
 
         WindowSystem* m_window;
 
-        glm::mat4 m_projView;
+        glm::mat4 m_proj;
+        glm::mat4 m_view;
+
+        struct InternalLight
+        {
+            glm::vec4 position;
+            glm::vec4 direction;
+
+            glm::vec4 diffuse;
+            glm::vec4 specular;
+        };
+        struct LightingData
+        {
+            glm::vec3 viewPos{};
+            glm::vec3 ambient{ 1, 1, 1 };
+            i32 lightCount = 0;
+            std::array<InternalLight, 32> lights{};
+        } m_lightingData{};
 
         struct InternalRenderable
         {
             Mesh* mesh;
             MaterialInst* materialInst;
-            glm::mat4 projView;
-            glm::mat4 model;
+            glm::mat4 world;
+            glm::mat4 view;
+            glm::mat4 proj;
         };
         std::vector<InternalRenderable> m_shadowBucket;
         std::vector<InternalRenderable> m_geometryBucket;

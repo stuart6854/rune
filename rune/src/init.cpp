@@ -33,8 +33,8 @@ namespace Rune
         Material* material = nullptr;
 
         float rotY = 0;
-        glm::mat4 proj;
-        glm::mat4 view;
+        glm::mat4 projMatrix;
+        glm::mat4 viewMatrix;
     }  // namespace
 
     void Game::sysInit()
@@ -99,8 +99,9 @@ namespace Rune
 
         material->setTexture("tex", texture);
         // MVP
-        proj = glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-        view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+        float aspect = static_cast<float>(props.width) / static_cast<float>(props.height);
+        projMatrix = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f);
+        viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
@@ -111,11 +112,11 @@ namespace Rune
 
     void Game::sysUpdate()
     {
-        GraphicsSystem::getInstance().beginScene(proj, view);
+        GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix);
 
         rotY += 5.0f * Time::getDeltaTime();
-        auto model = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
-        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), model });
+        auto worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
     }
 
     void Game::sysCleanup()
