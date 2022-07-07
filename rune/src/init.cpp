@@ -72,7 +72,7 @@ namespace Rune
         graphicsInst.init(RenderingApi::eOpenGL);
         graphicsInst.setWindow(&WindowSystem::getInstance());
 
-        // TODO: AssetRegistry::getInstance().cleanup();
+        AssetRegistry::getInstance().init();
 
         auto& assetRegistry = AssetRegistry::getInstance();
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
@@ -133,7 +133,7 @@ namespace Rune
         cleanup();
 
         // Cleanup engine subsystems
-        // TODO: AssetRegistry::getInstance().cleanup();
+        AssetRegistry::getInstance().cleanup();
         GraphicsSystem::getInstance().cleanup();
         WindowSystem::getInstance().cleanup();
         ConfigSystem::getInstance().cleanup();

@@ -10,6 +10,20 @@ namespace Rune
         return assetRegistry;
     }
 
+    void AssetRegistry::init() {}
+
+    void AssetRegistry::cleanup()
+    {
+        m_loadedAssets.clear();
+        m_assetGuidMap.clear();
+        m_assetMetadata.clear();
+
+        for (auto& assetFactory : m_assetFactories)
+        {
+            assetFactory.reset();
+        }
+    }
+
     auto AssetRegistry::add(const std::string& filename) -> AssetHandle
     {
         std::filesystem::path filePath = filename;

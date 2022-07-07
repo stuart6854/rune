@@ -31,7 +31,8 @@ namespace Rune
         template <typename FactoryType>
         void registerFactory(AssetType assetType);
 
-        // TODO: init/cleanup
+        void init();
+        void cleanup();
 
         auto add(const std::string& filename) -> AssetHandle;
         auto add(const std::string& name, Owned<Asset> asset) -> AssetHandle;
