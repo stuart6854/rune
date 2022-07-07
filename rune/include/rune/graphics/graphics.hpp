@@ -75,6 +75,8 @@ namespace Rune
 
         void onFramebufferSize(i32 width, i32 height) const;
 
+        bool canFrustumCull() const;
+
     private:
         RenderingApi m_renderingApi = RenderingApi::eNone;
         Owned<RendererBase> m_renderer;

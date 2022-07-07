@@ -82,7 +82,11 @@ namespace Rune
 
     void GraphicsSystem::addRenderable(const Renderable& renderable)
     {
-        // TODO: Check if can be Frustum culled?
+        if (canFrustumCull())
+        {
+            // TODO: Maybe add to list of culled objects, for debugging
+            return;
+        }
 
         auto& internalRenderable = m_geometryBucket.emplace_back();
         internalRenderable.mesh = renderable.mesh;
@@ -105,8 +109,8 @@ namespace Rune
             m_lightingData.ambient = { 0.1f, 0.1f, 0.1f };
             m_lightingData.lightCount = 1;
             m_lightingData.lights[0].position = { 5, 5, -3, 1 };
-             m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
-            //m_lightingData.lights[0].direction = {};
+            m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
+            // m_lightingData.lights[0].direction = {};
             m_lightingData.lights[0].diffuse = { 1, 1, 1, 1 };
             m_lightingData.lights[0].specular = { 1, 1, 1, 1 };
         }
@@ -139,5 +143,12 @@ namespace Rune
             return;
 
         m_renderer->onFramebufferSize(width, height);
+    }
+
+    bool GraphicsSystem::canFrustumCull() const
+    {
+        // TODO: Check if can be Frustum culled?
+        // TODO: Meshes need a bounding box (local space) (AABB?)
+        return false;
     }
 }
