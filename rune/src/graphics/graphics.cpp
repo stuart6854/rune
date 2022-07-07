@@ -76,11 +76,11 @@ namespace Rune
 
     void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view)
     {
-        m_proj = proj;
-        m_view = view;
+        m_scene.proj = proj;
+        m_scene.view = view;
     }
 
-    void GraphicsSystem::addRenderable(const Renderable& renderable)
+    void GraphicsSystem::addRenderable(const glm::mat4& transform, Mesh* mesh, MaterialInst* material)
     {
         if (canFrustumCull())
         {
@@ -88,12 +88,16 @@ namespace Rune
             return;
         }
 
-        auto& internalRenderable = m_geometryBucket.emplace_back();
-        internalRenderable.mesh = renderable.mesh;
-        internalRenderable.materialInst = renderable.materialInst;
-        internalRenderable.world = renderable.worldMatrix;
-        internalRenderable.view = m_view;
-        internalRenderable.proj = m_proj;
+        auto& drawData = m_drawData.emplace_back();
+        drawData.transform = transform;
+        drawData.mesh = mesh;
+        drawData.material = material;
+
+        DrawInstance instance{ .key = buildInstanceKey(), .drawDataIndex = m_drawData.size() - 1 };
+
+        // Put instance in buckets
+        m_shadowBucket.push_back(instance);
+        m_geometryBucket.push_back(instance);
     }
 
     void GraphicsSystem::render()
@@ -101,40 +105,47 @@ namespace Rune
         if (m_renderer == nullptr)
             return;
 
+        std::sort(m_shadowBucket.begin(), m_shadowBucket.end());
+        std::sort(m_geometryBucket.begin(), m_geometryBucket.end());
+
         m_renderer->beginFrame();
 
+        auto& lighting = m_scene.lighting;
+        // TODO: Renderer dedicated uniform buffer, bound once (proj, view, lighting, etc.)
+
+        // TODO: TEMPORARY
+        lighting.ambient = { 0.1f, 0.1f, 0.1f };
+        lighting.lightCount = 1;
+        lighting.lights[0].position = { 5, 5, -3, 1 };
+        lighting.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
+        // lighting.lights[0].direction = {};
+        lighting.lights[0].diffuse = { 1, 1, 1, 1 };
+        lighting.lights[0].specular = { 1, 1, 1, 1 };
+
+        glm::vec3 viewPos = glm::inverse(m_scene.view)[3];
+        for (const auto& instance : m_geometryBucket)
         {
-            // TODO: TEMPORARY
-            m_lightingData.viewPos = { 0, 0, 0 };
-            m_lightingData.ambient = { 0.1f, 0.1f, 0.1f };
-            m_lightingData.lightCount = 1;
-            m_lightingData.lights[0].position = { 5, 5, -3, 1 };
-            m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
-            // m_lightingData.lights[0].direction = {};
-            m_lightingData.lights[0].diffuse = { 1, 1, 1, 1 };
-            m_lightingData.lights[0].specular = { 1, 1, 1, 1 };
-        }
+            const auto& drawData = m_drawData[instance.drawDataIndex];
+            drawData.material->setMat4("u_renderer.worldMatrix", drawData.transform);
+            drawData.material->setMat4("u_renderer.viewMatrix", m_scene.view);
+            drawData.material->setMat4("u_renderer.projMatrix", m_scene.proj);
+            drawData.material->setFloat3("u_lighting.viewPos", viewPos);
+            drawData.material->setFloat3("u_lighting.ambient", lighting.ambient);
+            drawData.material->setInt("u_lighting.lightCount", lighting.lightCount);
+            drawData.material->setData("u_lighting.lights", sizeof(InternalLight) * lighting.lightCount, lighting.lights.data());
 
-        for (const auto& renderable : m_geometryBucket)
-        {
-            renderable.materialInst->setMat4("u_renderer.worldMatrix", renderable.world);
-            renderable.materialInst->setMat4("u_renderer.viewMatrix", renderable.view);
-            renderable.materialInst->setMat4("u_renderer.projMatrix", renderable.proj);
-            renderable.materialInst->setFloat3("u_lighting.viewPos", m_lightingData.viewPos);
-            renderable.materialInst->setFloat3("u_lighting.ambient", m_lightingData.ambient);
-            renderable.materialInst->setInt("u_lighting.lightCount", m_lightingData.lightCount);
-            renderable.materialInst->setData("u_lighting.lights", sizeof(m_lightingData.lights), m_lightingData.lights.data());
+            drawData.material->setFloat3("u_material.diffuse", { 1, 1, 1 });
+            drawData.material->setFloat("u_material.shininess", 32);
 
-            renderable.materialInst->setFloat3("u_material.diffuse", { 1, 1, 1 });
-            renderable.materialInst->setFloat("u_material.shininess", 32);
-
-            m_renderer->draw(renderable.mesh, renderable.materialInst);
+            m_renderer->draw(drawData.mesh, drawData.material);
         }
 
         m_renderer->endFrame();
 
-        m_lightingData.lightCount = 0;
+        lighting.lightCount = 0;
+        m_shadowBucket.clear();
         m_geometryBucket.clear();
+        m_drawData.clear();
     }
 
     void GraphicsSystem::onFramebufferSize(const i32 width, const i32 height) const
@@ -150,5 +161,27 @@ namespace Rune
         // TODO: Check if can be Frustum culled?
         // TODO: Meshes need a bounding box (local space) (AABB?)
         return false;
+    }
+
+    auto GraphicsSystem::buildInstanceKey() -> u32
+    {
+        u32 key = 0;
+
+        bool isTransparent = true;
+        u8 materialIndex = 255;
+        u8 meshIndex = 4;
+
+        key = (key | isTransparent) << 8;
+        key = (key | materialIndex) << 8;
+        key = (key | meshIndex);
+
+        CORE_LOG_TRACE("{:B}", key);
+
+        return key;
+    }
+
+    bool GraphicsSystem::DrawInstance::operator<(const DrawInstance& other) const
+    {
+        return other.key < other.key;
     }
 }

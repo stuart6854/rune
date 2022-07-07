@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics.hpp"
 #include "rune/defines.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
@@ -66,7 +67,7 @@ namespace Rune
 
         void beginScene(const glm::mat4 proj, const glm::mat4& view);
 
-        void addRenderable(const Renderable& renderable);
+        void addRenderable(const glm::mat4& transform, Mesh* mesh, MaterialInst* material);
 
         void render();
 
@@ -77,14 +78,13 @@ namespace Rune
 
         bool canFrustumCull() const;
 
+        static auto buildInstanceKey() -> u32;
+
     private:
         RenderingApi m_renderingApi = RenderingApi::eNone;
         Owned<RendererBase> m_renderer;
 
         WindowSystem* m_window;
-
-        glm::mat4 m_proj;
-        glm::mat4 m_view;
 
         struct InternalLight
         {
@@ -94,24 +94,40 @@ namespace Rune
             glm::vec4 diffuse;
             glm::vec4 specular;
         };
-        struct LightingData
+
+        struct Lighting
         {
-            glm::vec3 viewPos{};
-            glm::vec3 ambient{ 1, 1, 1 };
+            glm::vec3 ambient = { 1, 1, 1 };
             i32 lightCount = 0;
             std::array<InternalLight, 32> lights{};
-        } m_lightingData{};
+        };
 
-        struct InternalRenderable
+        struct Scene
+        {
+            glm::mat4 proj = glm::mat4(1.0f);
+            glm::mat4 view = glm::mat4(1.0f);
+            Lighting lighting{};
+        } m_scene{};
+
+        struct DrawData
         {
             Mesh* mesh;
-            MaterialInst* materialInst;
-            glm::mat4 world;
-            glm::mat4 view;
-            glm::mat4 proj;
+            MaterialInst* material;
+            glm::mat4 transform;
         };
-        std::vector<InternalRenderable> m_shadowBucket;
-        std::vector<InternalRenderable> m_geometryBucket;
+
+        struct DrawInstance
+        {
+            u32 key;
+            size drawDataIndex;
+
+            bool operator<(const DrawInstance& other) const;
+        };
+
+        std::vector<DrawData> m_drawData;
+
+        std::vector<DrawInstance> m_shadowBucket;
+        std::vector<DrawInstance> m_geometryBucket;
     };
 
     class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer, public MaterialInst::Observer

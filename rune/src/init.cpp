@@ -117,14 +117,19 @@ namespace Rune
         GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix);
 
         rotY += 5.0f * Time::getDeltaTime();
+
+        // Centre
         // auto worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
         auto worldMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f, 0.2f, 0.2f));
-        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
+        GraphicsSystem::getInstance().addRenderable(worldMatrix, mesh, material->getDefaultInstance());
 
+        // Forward
         worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
-        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
+        GraphicsSystem::getInstance().addRenderable(worldMatrix, mesh, material->getDefaultInstance());
+
+        // Right
         worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 2));
-        GraphicsSystem::getInstance().addRenderable({ mesh, material->getDefaultInstance(), worldMatrix });
+        GraphicsSystem::getInstance().addRenderable(worldMatrix, mesh, material->getDefaultInstance());
     }
 
     void Game::sysCleanup()
