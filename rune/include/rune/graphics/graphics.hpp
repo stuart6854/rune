@@ -1,6 +1,10 @@
 #pragma once
 
 #include "graphics.hpp"
+#include "graphics.hpp"
+#include "graphics.hpp"
+#include "graphics.hpp"
+#include "graphics.hpp"
 #include "rune/defines.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
@@ -76,7 +80,7 @@ namespace Rune
         auto getWindow() const -> WindowSystem*;
         void setWindow(WindowSystem* window);
 
-        void beginScene(const glm::mat4 proj, const glm::mat4& view);
+        void beginScene(const glm::mat4 proj, const glm::mat4& view, const Lighting& lighting);
 
         void addRenderable(const glm::mat4& transform, Mesh* mesh, MaterialInst* material);
 

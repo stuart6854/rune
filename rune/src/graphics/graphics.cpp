@@ -82,26 +82,15 @@ namespace Rune
         m_renderer->setWindow(m_window);
     }
 
-    void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view)
+    void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view, const Lighting& lighting)
     {
         m_sceneData.proj = proj;
         m_sceneData.view = view;
         // TODO: Upload to scene UBO
 
-        glm::vec3 viewPos = glm::inverse(m_sceneData.view)[3];
-        {
-            // TODO: TEMPORARY
-            m_lightingData.ambient = { 0.1f, 0.1f, 0.1f };
-            m_lightingData.lightCount = 1;
-            m_lightingData.lights[0].position = { 5, 5, -3 };
-            m_lightingData.lights[0].isDirectional = true;
-            m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
-            // m_lightingData.lights[0].direction = {};
-            m_lightingData.lights[0].diffuseColor = { 1, 1, 1, 1 };
-            m_lightingData.lights[0].specularColor = { 1, 1, 1, 1 };
-        }
-
-        // TODO: Upload lighting data to ubo
+        m_lightingData = lighting;
+        // TODO: Only upload required lights
+        m_renderer->updateBuffer(m_lightingUbo, 0, sizeof(Lighting), &m_lightingData);
     }
 
     void GraphicsSystem::addRenderable(const glm::mat4& transform, Mesh* mesh, MaterialInst* material)
@@ -134,8 +123,6 @@ namespace Rune
 
         m_renderer->beginFrame();
 
-        // TODO: Renderer dedicated uniform buffer, bound once (proj, view, lighting, etc.)
-
         m_drawData[0].material->setFloat3("u_material.diffuse", { 1, 1, 1 });
         m_drawData[0].material->setFloat("u_material.shininess", 32);
 
@@ -148,10 +135,9 @@ namespace Rune
 
             m_renderer->bindMesh(drawData.mesh);
 
-            // TODO: Upload world matrix to scene ubo
             m_sceneData.world = drawData.transform;
+            // TODO: Only upload what changed
             m_renderer->updateBuffer(m_sceneUbo, 0, sizeof(Scene), &m_sceneData);
-            m_renderer->updateBuffer(m_lightingUbo, 0, sizeof(Lighting), &m_lightingData);
 
             m_renderer->draw();
         }

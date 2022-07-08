@@ -114,7 +114,18 @@ namespace Rune
 
     void Game::sysUpdate()
     {
-        GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix);
+        Lighting lighting{};
+        lighting.viewPos = { 0, 0, -5.0f, 1.0f };
+        lighting.ambient = { 0.1f, 0.1f, 0.1f };
+        lighting.lightCount = 1;
+        lighting.lights[0].position = { 5, 5, -3 };
+        lighting.lights[0].isDirectional = true;
+        lighting.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
+        // lighting.lights[0].direction = {};
+        lighting.lights[0].diffuseColor = { 1, 1, 1, 1 };
+        lighting.lights[0].specularColor = { 1, 1, 1, 1 };
+
+        GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix, lighting);
 
         rotY += 5.0f * Time::getDeltaTime();
 
