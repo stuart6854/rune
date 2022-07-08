@@ -6,10 +6,11 @@
 #include "rune/core/time.hpp"
 #include "rune/core/window.hpp"
 #include "rune/graphics/graphics.hpp"
-#include "rune/assets/asset_factory.hpp"
-#include "rune/events/events.hpp"
-#include "rune/assets/asset_registry.hpp"
 #include "rune/graphics/material.hpp"
+#include "rune/input/input.hpp"
+#include "rune/assets/asset_factory.hpp"
+#include "rune/assets/asset_registry.hpp"
+#include "rune/events/events.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
@@ -68,6 +69,9 @@ namespace Rune
         windowInst.init();
         windowInst.createWindow(props);
 
+        auto& inputInst = InputSystem::getInstance();
+        inputInst.init();
+
         // TODO: Get rendering settings from config
         auto& graphicsInst = GraphicsSystem::getInstance();
         graphicsInst.init(RenderingApi::eOpenGL);
@@ -118,6 +122,17 @@ namespace Rune
 
     void Game::sysUpdate()
     {
+        Time::beginFrame();
+        InputSystem::getInstance().newFrame();
+        WindowSystem::getInstance().update();
+
+        if (InputSystem::getInstance().isKeyDown(Input::KEY_W))
+            CORE_LOG_INFO("Key down");
+        if (InputSystem::getInstance().isKeyUp(Input::KEY_W))
+            CORE_LOG_INFO("Key up");
+        if (InputSystem::getInstance().isKeyHeld(Input::KEY_W))
+            CORE_LOG_INFO("Key held");
+
         constexpr float radius = 5.0f;
         auto time = Time::getTimeSinceStartup() * 50.0f;
         glm::vec3 lightPos = { glm::cos(glm::radians(time)) * radius, 5.0f, glm::sin(glm::radians(time)) * radius };
@@ -160,6 +175,7 @@ namespace Rune
         // Cleanup engine subsystems
         AssetRegistry::getInstance().cleanup();
         GraphicsSystem::getInstance().cleanup();
+        InputSystem::getInstance().cleanup();
         WindowSystem::getInstance().cleanup();
         ConfigSystem::getInstance().cleanup();
         LogSystem::cleanup();
@@ -169,8 +185,6 @@ namespace Rune
     {
         while (!s_shouldStop)
         {
-            Time::beginFrame();
-            WindowSystem::getInstance().update();
             sysUpdate();
             update();
             GraphicsSystem::getInstance().render();

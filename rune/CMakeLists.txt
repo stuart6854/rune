@@ -41,6 +41,7 @@ file(GLOB
 	"${source_dir}/assets/asset.cpp"
 	"${source_dir}/assets/asset_factory.cpp"
 	"${source_dir}/assets/asset_registry.cpp"
+	"${source_dir}/input/input.cpp"
 	"${source_dir}/maths/random.cpp"
 	"${source_dir}/utility/guid.cpp"
 	"${source_dir}/utility/buffer.cpp"

@@ -169,6 +169,15 @@ namespace Rune
                                            EventSystem::notify(EventFramebufferSize{ width, height });
                                        });
 
+        glfwSetKeyCallback(static_cast<GLFWwindow*>(m_windowPtr),
+                           [](GLFWwindow* window, const int key, int, const int action, int)
+                           {
+                               if (action == GLFW_PRESS)
+                                   EventSystem::notify(EventKeyDown{ key });
+                               else if (action == GLFW_RELEASE)
+                                   EventSystem::notify(EventKeyUp{ key });
+                           });
+
         return true;
     }
 
