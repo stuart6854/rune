@@ -31,7 +31,7 @@ namespace Rune
     struct Light
     {
         glm::vec3 position;
-        bool isDirectional;
+        int isDirectional;
         glm::vec4 direction;
 
         float constant;

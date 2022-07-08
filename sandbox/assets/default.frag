@@ -8,7 +8,8 @@ layout (location = 0) out vec4 out_fragColor;
 
 struct Light
 {
-	vec4 position;
+	vec3 position;
+	int isDirectional;
 	vec4 direction;
 
 	float constant;
@@ -24,7 +25,7 @@ layout(std140, binding = 1) uniform Lighting
 {
 	vec4 viewPos;
 	vec3 ambient;
-	
+
 	int lightCount;
 	Light lights[MAX_LIGHTS];
 } u_lighting;
@@ -40,8 +41,8 @@ layout(binding = 3) uniform sampler2D tex;
 vec3 calcLight(Light light, vec3 objectColor, vec3 fragNormal, vec3 fragPos, vec3 viewDir)
 {
 	vec3 lightDir = vec3(0.0);
-	lightDir += normalize(light.position.xyz - fragPos) * (1.0 - light.position.w);
-	lightDir += normalize(light.direction.xyz) * light.position.w;
+	lightDir += normalize(light.position.xyz - fragPos) * (1 - light.isDirectional);
+	lightDir += normalize(light.direction.xyz) * light.isDirectional;
 	// Diffuse shading
 	float diff = max(dot(fragNormal, lightDir), 0.0);
 	// Specular shading

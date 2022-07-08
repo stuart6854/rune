@@ -35,6 +35,7 @@ namespace Rune
         float rotY = 0;
         glm::mat4 projMatrix;
         glm::mat4 viewMatrix;
+
     }  // namespace
 
     void Game::sysInit()
@@ -117,15 +118,20 @@ namespace Rune
 
     void Game::sysUpdate()
     {
+        constexpr float radius = 5.0f;
+        auto time = Time::getTimeSinceStartup() * 50.0f;
+        glm::vec3 lightPos = { glm::cos(glm::radians(time)) * radius, 5.0f, glm::sin(glm::radians(time)) * radius };
+        // glm::vec3 lightPos = { 2.0f, 2.0f, -2.0f };
+
         Lighting lighting{};
         lighting.viewPos = { 0, 0, -5.0f, 1.0f };
         lighting.ambient = { 0.1f, 0.1f, 0.1f };
         lighting.lightCount = 1;
-        lighting.lights[0].position = { 5, 5, -3 };
-        lighting.lights[0].isDirectional = true;
-        lighting.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
-        // lighting.lights[0].direction = {};
-        lighting.lights[0].diffuseColor = { 1, 1, 1, 1 };
+        // lighting.lights[0].position = { 5, 5, -3 };
+        lighting.lights[0].position = lightPos;
+        lighting.lights[0].isDirectional = false;
+        lighting.lights[0].direction = glm::normalize(glm::vec4{ 0, 0, -1, 1 });
+        lighting.lights[0].diffuseColor = { 1.0f, 1.0f, 1.0f, 1 };
         lighting.lights[0].specularColor = { 1, 1, 1, 1 };
 
         GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix, lighting);
