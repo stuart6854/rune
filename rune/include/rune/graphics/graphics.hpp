@@ -28,14 +28,23 @@ namespace Rune
     {
         glm::vec3 position;
         bool isDirectional;
-        glm::vec3 direction;
+        glm::vec4 direction;
 
         float constant;
         float linear;
         float quadratic;
 
-        glm::vec3 diffuseColor;
-        glm::vec3 specularColor;
+        glm::vec4 diffuseColor;
+        glm::vec4 specularColor;
+    };
+
+    struct Lighting
+    {
+        glm::vec4 viewPos = {};
+        glm::vec3 ambient = { 0.2, 0.2f, 0.2f };
+
+        i32 lightCount = 0;
+        std::array<Light, 32> lights{};
     };
 
     struct Renderable
@@ -62,6 +71,8 @@ namespace Rune
         auto getRenderingApi() const -> RenderingApi;
         void setRenderingApi(RenderingApi renderingApi);
 
+        auto getRenderer() const -> RendererBase*;
+
         auto getWindow() const -> WindowSystem*;
         void setWindow(WindowSystem* window);
 
@@ -86,28 +97,17 @@ namespace Rune
 
         WindowSystem* m_window;
 
-        struct InternalLight
-        {
-            glm::vec4 position;
-            glm::vec4 direction;
-
-            glm::vec4 diffuse;
-            glm::vec4 specular;
-        };
-
-        struct Lighting
-        {
-            glm::vec3 ambient = { 1, 1, 1 };
-            i32 lightCount = 0;
-            std::array<InternalLight, 32> lights{};
-        };
-
         struct Scene
         {
             glm::mat4 proj = glm::mat4(1.0f);
             glm::mat4 view = glm::mat4(1.0f);
-            Lighting lighting{};
-        } m_scene{};
+            glm::mat4 world = glm::mat4(1.0f);
+        };
+        Scene m_sceneData{};
+        u32 m_sceneUbo{};
+
+        Lighting m_lightingData{};
+        u32 m_lightingUbo{};
 
         struct DrawData
         {
@@ -130,10 +130,10 @@ namespace Rune
         std::vector<DrawInstance> m_geometryBucket;
     };
 
-    class RendererBase : public Mesh::Observer, public Texture::Observer, public Shader::Observer, public MaterialInst::Observer
+    class RendererBase
     {
     public:
-        ~RendererBase() override = default;
+        virtual ~RendererBase() = default;
 
         virtual void init() = 0;
         virtual void cleanup() = 0;
@@ -141,22 +141,29 @@ namespace Rune
         virtual void setWindow(WindowSystem* window) = 0;
         virtual void onFramebufferSize(i32 width, i32 height) = 0;
 
+        virtual auto createBuffer(size size, const void* data) -> u32 = 0;
+        virtual void destroyBuffer(u32 id) = 0;
+        virtual void updateBuffer(u32 id, size offset, size size, const void* data) = 0;
+
+        virtual auto createMesh(const std::vector<Vertex>& vertices, const std::vector<u16>& indices, MeshTopology topology) -> u32 = 0;
+        virtual void destroyMesh(u32 id) = 0;
+        virtual void updateMeshVertices(u32 id, const std::vector<Vertex>& vertices) = 0;
+        virtual void updateMeshIndices(u32 id, const std::vector<u16>& indices) = 0;
+
+        virtual auto createMaterial(const std::vector<u8>& vertexCode, const std::vector<u8>& fragmentCode) -> u32 = 0;
+        virtual void destroyMaterial(u32 id) = 0;
+
+        virtual auto createTexture(u32 width, u32 height, TextureFormat format, const void* data) -> u32 = 0;
+        virtual void destroyTexture(u32 id) = 0;
+
         virtual void beginFrame() = 0;
         virtual void endFrame() = 0;
 
-        virtual void draw(Mesh* mesh, MaterialInst* materialInst) = 0;
+        virtual void bindUniformBuffer(u32 id, u32 binding) = 0;
+        virtual void bindMaterial(MaterialInst* material) = 0;
+        virtual void bindMesh(Mesh* mesh) = 0;
 
-        void destroying(const Mesh* mesh) override = 0;
-        void changed(const Mesh* mesh) override = 0;
-
-        void destroying(const Texture* texture) override = 0;
-        void changed(const Texture* texture) override = 0;
-
-        void destroying(const Shader* shader) override = 0;
-        void changed(const Shader* shader) override = 0;
-
-        void destroying(const MaterialInst* materialInst) override = 0;
-        void uniformChanged(const MaterialInst* materialInst, u32 bufferIndex, u32 offset, u32 size) override = 0;
+        virtual void draw() = 0;
     };
 
 }

@@ -131,10 +131,10 @@ namespace Rune
         return CreateOwned<Renderer_OpenGL>();
     }
 
+    Renderer_OpenGL::~Renderer_OpenGL() {}
+
     void Renderer_OpenGL::init()
     {
-        m_data = CreateOwned<RendererData>();
-
         bool isOpenGlLoaded = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
         RUNE_ENG_ASSERT(isOpenGlLoaded, "Failed to load OpenGL!");
 
@@ -150,7 +150,7 @@ namespace Rune
 
     void Renderer_OpenGL::cleanup()
     {
-        m_data.reset();
+        // TODO: Destroy resources
     }
 
     void Renderer_OpenGL::setWindow(WindowSystem* window) {}
@@ -160,199 +160,94 @@ namespace Rune
         glViewport(0, 0, width, height);
     }
 
-    void Renderer_OpenGL::beginFrame()
+    u32 Renderer_OpenGL::createBuffer(const size size, const void* data)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.3912f, 0.5843f, 0.9294f, 1.0f);  // Cornflower Blue
+        Buffer buffer{};
+        buffer.size = size;
+
+        glCreateBuffers(1, &buffer.buffer);
+        glNamedBufferData(buffer.buffer, size, data, GL_STATIC_DRAW);
+
+        return m_bufferStorage.add(buffer);
     }
 
-    void Renderer_OpenGL::endFrame() {}
-
-    void Renderer_OpenGL::draw(Mesh* mesh, MaterialInst* materialInst)
+    void Renderer_OpenGL::destroyBuffer(const u32 id)
     {
-        /* Mesh */
-        if (!m_data->meshes.contains(mesh->getGuid()))
-        {
-            // Create OpenGL mesh
-            m_data->meshes.emplace(mesh->getGuid(), createMesh(mesh));
+        auto& buffer = m_bufferStorage.get(id);
+        glDeleteBuffers(1, &buffer.buffer);
 
-            mesh->attachObserver(this);
-        }
-
-        /* Material Instance */
-        if (!m_data->materialInstances.contains(materialInst->getGuid()))
-        {
-            // Create OpenGL material instance
-            m_data->materialInstances.emplace(materialInst->getGuid(), createMaterialInstance(materialInst));
-
-            materialInst->attachObserver(this);
-        }
-
-        /* Texture */
-        /*if (!m_data->textures.contains(texture->getGuid()))
-        {
-            // Create OpenGL texture
-            m_data->textures.emplace(texture->getGuid(), createTexture(texture));
-
-            materialInst->attachObserver(this);
-        }*/
-
-        auto& glMaterial = m_data->materials.at(materialInst->getMaterial()->getGuid());
-        glUseProgram(glMaterial.program);
-
-        auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
-
-        // Uniform Buffers
-        for (const auto& uniformBuffer : glMaterialInst.uniformBuffers)
-        {
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBuffer.binding, uniformBuffer.bufferId);
-        }
-
-        // Textures
-        for (const auto& slot : glMaterialInst.textureSlots)
-        {
-            glBindTextureUnit(slot.slot, slot.texId);
-            glUniform1i(glGetUniformLocation(glMaterial.program, slot.name.c_str()), slot.slot);
-        }
-
-        auto& glMesh = m_data->meshes.at(mesh->getGuid());
-
-        glBindVertexArray(glMesh.vao);
-        glDrawElements(glMesh.topology, glMesh.indexCount, GL_UNSIGNED_SHORT, nullptr);
+        m_bufferStorage.remove(id);
     }
 
-    void Renderer_OpenGL::destroying(const Mesh* mesh)
+    void Renderer_OpenGL::updateBuffer(const u32 id, size offset, size size, const void* data)
     {
-        const auto it = m_data->meshes.find(mesh->getGuid());
-        if (it != m_data->meshes.end())
-        {
-            destroyMesh(it->second);
-            m_data->meshes.erase(it);
-        }
+        auto& buffer = m_bufferStorage.get(id);
+
+        glNamedBufferData(buffer.buffer, size, data, GL_STATIC_DRAW);
     }
 
-    void Renderer_OpenGL::changed(const Mesh* mesh)
+    auto Renderer_OpenGL::createMesh(const std::vector<Vertex>& vertices, const std::vector<u16>& indices, const MeshTopology topology)
+        -> u32
     {
-        const auto& glMesh = m_data->meshes.at(mesh->getGuid());
-        destroyMesh(glMesh);
-        m_data->meshes.emplace(mesh->getGuid(), createMesh(mesh));
-    }
+        Mesh mesh{};
 
-    void Renderer_OpenGL::destroying(const Texture* texture) {}
+        mesh.topology = toGLTopology(topology);
+        mesh.indexCount = indices.size();
 
-    void Renderer_OpenGL::changed(const Texture* texture) {}
+        glCreateVertexArrays(1, &mesh.vao);
 
-    void Renderer_OpenGL::destroying(const Shader* shader) {}
+        mesh.indexBuffer = createBuffer(indices.size() * sizeof(u16), indices.data());
+        mesh.vertexBuffer = createBuffer(vertices.size() * sizeof(Vertex), vertices.data());
 
-    void Renderer_OpenGL::changed(const Shader* shader) {}
+        auto& ibo = m_bufferStorage.get(mesh.indexBuffer);
+        auto& vbo = m_bufferStorage.get(mesh.vertexBuffer);
 
-    void Renderer_OpenGL::destroying(const MaterialInst* materialInst) {}
-
-    void Renderer_OpenGL::uniformChanged(const MaterialInst* materialInst, const u32 bufferIndex, const u32 offset, const u32 size)
-    {
-        const auto& buffer = materialInst->getUniformBuffers()[bufferIndex].buffer;
-
-        auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
-        glNamedBufferSubData(glMaterialInst.uniformBuffers[bufferIndex].bufferId, offset, size, buffer.readBytes(size, offset));
-    }
-
-    auto Renderer_OpenGL::createMesh(const Mesh* mesh) -> GlMesh
-    {
-        const auto& indices = mesh->getIndices();
-        const auto& vertices = mesh->getVertices();
-
-        GlMesh glMesh{};
-
-        glMesh.topology = toGLTopology(mesh->getTopology());
-        glMesh.indexCount = indices.size();
-
-        glCreateVertexArrays(1, &glMesh.vao);
-
-        // Index Buffer
-        glCreateBuffers(1, &glMesh.ebo);
-        glNamedBufferData(glMesh.ebo, sizeof(u16) * indices.size(), indices.data(), GL_STATIC_DRAW);
-        // Vertex buffer
-        glCreateBuffers(1, &glMesh.vbo);
-        glNamedBufferData(glMesh.vbo, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-
-        // Assign buffers to Vertex Array
-        glVertexArrayVertexBuffer(glMesh.vao, 0, glMesh.vbo, 0, sizeof(Vertex));
-        glVertexArrayElementBuffer(glMesh.vao, glMesh.ebo);
+        // Assign buffers to Vertex Buffer Object
+        glVertexArrayElementBuffer(mesh.vao, ibo.buffer);
+        glVertexArrayVertexBuffer(mesh.vao, 0, vbo.buffer, 0, sizeof(Vertex));
 
         // Setup attributes
-        glEnableVertexArrayAttrib(glMesh.vao, 0);
-        glVertexArrayAttribBinding(glMesh.vao, 0, 0);
-        glVertexArrayAttribFormat(glMesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
+        glEnableVertexArrayAttrib(mesh.vao, 0);
+        glVertexArrayAttribBinding(mesh.vao, 0, 0);
+        glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
 
-        glEnableVertexArrayAttrib(glMesh.vao, 1);
-        glVertexArrayAttribBinding(glMesh.vao, 1, 0);
-        glVertexArrayAttribFormat(glMesh.vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, uv));
+        glEnableVertexArrayAttrib(mesh.vao, 1);
+        glVertexArrayAttribBinding(mesh.vao, 1, 0);
+        glVertexArrayAttribFormat(mesh.vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, uv));
 
-        glEnableVertexArrayAttrib(glMesh.vao, 2);
-        glVertexArrayAttribBinding(glMesh.vao, 2, 0);
-        glVertexArrayAttribFormat(glMesh.vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, norm));
+        glEnableVertexArrayAttrib(mesh.vao, 2);
+        glVertexArrayAttribBinding(mesh.vao, 2, 0);
+        glVertexArrayAttribFormat(mesh.vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, norm));
 
-        return glMesh;
+        return m_meshStorage.add(mesh);
     }
 
-    void Renderer_OpenGL::destroyMesh(const Renderer_OpenGL::GlMesh& glMesh)
+    void Renderer_OpenGL::destroyMesh(const u32 id)
     {
-        glDeleteBuffers(1, &glMesh.ebo);
-        glDeleteBuffers(1, &glMesh.vbo);
-        glDeleteVertexArrays(1, &glMesh.vao);
+        auto& mesh = m_meshStorage.get(id);
+
+        destroyBuffer(mesh.vertexBuffer);
+        destroyBuffer(mesh.indexBuffer);
+
+        glDeleteVertexArrays(1, &mesh.vao);
+        m_meshStorage.remove(id);
     }
 
-    bool Renderer_OpenGL::hasTexture(const Texture* texture) const
+    void Renderer_OpenGL::updateMeshVertices(const u32 id, const std::vector<Vertex>& vertices)
     {
-        return m_data->textures.contains(texture->getGuid());
+        auto& mesh = m_meshStorage.get(id);
+        updateBuffer(mesh.vertexBuffer, 0, sizeof(Vertex) * vertices.size(), vertices.data());
     }
 
-    auto Renderer_OpenGL::getTexture(const Texture* texture) const -> const Renderer_OpenGL::GlTexture*
+    void Renderer_OpenGL::updateMeshIndices(const u32 id, const std::vector<u16>& indices)
     {
-        if (hasTexture(texture))
-            return &m_data->textures.at(texture->getGuid());
-
-        return nullptr;
+        auto& mesh = m_meshStorage.get(id);
+        updateBuffer(mesh.indexBuffer, 0, sizeof(u16) * indices.size(), indices.data());
     }
 
-    auto Renderer_OpenGL::createTexture(const Texture* texture) const -> const GlTexture&
+    auto Renderer_OpenGL::createMaterial(const std::vector<u8>& vertexCode, const std::vector<u8>& fragmentCode) -> u32
     {
-        GLuint textureId;
-        glCreateTextures(GL_TEXTURE_2D, 1, &textureId);
-
-        glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTextureParameteri(textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        auto width = texture->getWidth();
-        auto height = texture->getHeight();
-        auto internalFormat = toGLInternalTextureFormat(texture->getFormat());
-        auto format = toGLTextureFormat(texture->getFormat());
-
-        glTextureStorage2D(textureId, 1, internalFormat, width, height);
-        glTextureSubImage2D(textureId, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, texture->getData().data());
-
-        glGenerateTextureMipmap(textureId);
-
-        GlTexture glTexture{ textureId };
-
-        m_data->textures[texture->getGuid()] = glTexture;
-        return m_data->textures[texture->getGuid()];
-    }
-
-    void Renderer_OpenGL::destroyTexture(const Renderer_OpenGL::GlTexture& glTexture)
-    {
-        glDeleteTextures(1, &glTexture.texId);
-    }
-
-    auto Renderer_OpenGL::createMaterial(const Material* material) -> GlMaterial
-    {
-        GlMaterial glMaterial{};
-
-        auto* shader = material->getShader();
-        const auto& vertexCode = shader->getVertexCode();
-        const auto& fragmentCode = shader->getFragmentCode();
+        Material material{};
 
         GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderBinary(1, &vertShader, GL_SHADER_BINARY_FORMAT_SPIR_V, vertexCode.data(), vertexCode.size() * sizeof(u8));
@@ -364,21 +259,126 @@ namespace Rune
         glSpecializeShader(fragShader, "main", 0, nullptr, nullptr);
         checkForShaderError(fragShader);
 
-        glMaterial.program = glCreateProgram();
-        glAttachShader(glMaterial.program, vertShader);
-        glAttachShader(glMaterial.program, fragShader);
-        glLinkProgram(glMaterial.program);
-        checkForProgramError(glMaterial.program);
+        material.program = glCreateProgram();
+        glAttachShader(material.program, vertShader);
+        glAttachShader(material.program, fragShader);
+        glLinkProgram(material.program);
+        checkForProgramError(material.program);
 
         glDeleteShader(vertShader);
         glDeleteShader(fragShader);
 
-        return glMaterial;
+        return m_materialStorage.add(material);
     }
 
-    auto Renderer_OpenGL::destroyMaterial(const GlMaterial& glMaterial) {}
+    void Renderer_OpenGL::destroyMaterial(const u32 id)
+    {
+        auto& material = m_materialStorage.get(id);
 
-    auto Renderer_OpenGL::createMaterialInstance(const MaterialInst* materialInst) const -> GlMaterialInst
+        glDeleteProgram(material.program);
+
+        m_materialStorage.remove(id);
+    }
+
+    auto Renderer_OpenGL::createTexture(const u32 width, const u32 height, const TextureFormat format, const void* data) -> u32
+    {
+        Texture texture{};
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &texture.texture);
+
+        glTextureParameteri(texture.texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(texture.texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(texture.texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(texture.texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        auto internalFormat = toGLInternalTextureFormat(format);
+        auto dataFormat = toGLTextureFormat(format);
+
+        glTextureStorage2D(texture.texture, 1, internalFormat, width, height);
+        glTextureSubImage2D(texture.texture, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+
+        glGenerateTextureMipmap(texture.texture);
+
+        return m_textureStorage.add(texture);
+    }
+
+    void Renderer_OpenGL::destroyTexture(const u32 id)
+    {
+        auto& texture = m_textureStorage.get(id);
+        glDeleteTextures(1, &texture.texture);
+
+        m_textureStorage.remove(id);
+    }
+
+    void Renderer_OpenGL::beginFrame()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.3912f, 0.5843f, 0.9294f, 1.0f);  // Cornflower Blue
+    }
+
+    void Renderer_OpenGL::endFrame() {}
+
+    void Renderer_OpenGL::bindUniformBuffer(const u32 id, const u32 binding)
+    {
+        auto& buffer = m_bufferStorage.get(id);
+        glBindBufferBase(GL_UNIFORM_BUFFER, binding, buffer.buffer);
+    }
+
+    void Renderer_OpenGL::bindMaterial(MaterialInst* material)
+    {
+        auto& internalMaterial = m_materialStorage.get(material->getMaterial()->getId());
+        if (m_boundMaterial == &internalMaterial)
+            return;
+
+        glUseProgram(internalMaterial.program);
+
+        // TODO: Set state
+
+        // Uniform Buffers
+        for (const auto& uniformBuffer : material->getUniformBuffers())
+        {
+            bindUniformBuffer(uniformBuffer.internalId, uniformBuffer.binding);
+        }
+
+        // Textures
+        for (const auto& slot : material->getTextureSlots())
+        {
+            auto& texture = m_textureStorage.get(slot.texture->getInternalId());
+            glBindTextureUnit(slot.binding, texture.texture);
+            glUniform1i(glGetUniformLocation(internalMaterial.program, slot.name.c_str()), slot.binding);
+        }
+
+        m_boundMaterial = &internalMaterial;
+    }
+
+    void Renderer_OpenGL::bindMesh(Rune::Mesh* mesh)
+    {
+        auto& internalMesh = m_meshStorage.get(mesh->getId());
+        if (m_boundMesh == &internalMesh)
+            return;
+
+        glBindVertexArray(internalMesh.vao);
+
+        m_boundMesh = &internalMesh;
+    }
+
+    void Renderer_OpenGL::draw()
+    {
+        RUNE_ENG_ASSERT(m_boundMaterial != nullptr, "No material bound!");
+        RUNE_ENG_ASSERT(m_boundMesh != nullptr, "No mesh bound!");
+
+        glDrawElements(m_boundMesh->topology, m_boundMesh->indexCount, GL_UNSIGNED_SHORT, nullptr);
+    }
+
+    /*void Renderer_OpenGL::uniformChanged(const MaterialInst* materialInst, const u32 bufferIndex, const u32 offset, const u32 size)
+    {
+        const auto& buffer = materialInst->getUniformBuffers()[bufferIndex].buffer;
+
+        auto& glMaterialInst = m_data->materialInstances.at(materialInst->getGuid());
+        glNamedBufferSubData(glMaterialInst.uniformBuffers[bufferIndex].bufferId, offset, size, buffer.readBytes(size, offset));
+    }*/
+
+    /*auto Renderer_OpenGL::createMaterialInstance(const MaterialInst* materialInst) const -> GlMaterialInst
     {
         // Create the base material if it doesn't exist
         auto* material = materialInst->getMaterial();
@@ -390,7 +390,7 @@ namespace Rune
             // material->attachObserver(this); // TODO
         }
 
-        /* Create material instance */
+        /* Create material instance #1#
 
         const auto& baseUniformBuffers = material->getUniformBuffers();
         const auto& baseTextureSlots = material->getTextureSlots();
@@ -400,7 +400,7 @@ namespace Rune
 
         GlMaterialInst glMaterialInst{};
 
-        /* Uniform Buffers */
+        /* Uniform Buffers #1#
 
         glMaterialInst.uniformBuffers.resize(baseUniformBuffers.size());
         for (size i = 0; i < baseUniformBuffers.size(); ++i)
@@ -415,13 +415,13 @@ namespace Rune
                 glMaterialInst.uniformBuffers[i].bufferId, uniformBuffer.buffer.getSize(), uniformBuffer.buffer.getData(), GL_STATIC_DRAW);
         }
 
-        /* Texture Slots */
+        /* Texture Slots #1#
         glMaterialInst.textureSlots.resize(baseTextureSlots.size());
         for (size i = 0; i < baseTextureSlots.size(); ++i)
         {
             const auto& baseSlot = baseTextureSlots[i];
 
-            /* Set from Material Base */
+            /* Set from Material Base #1#
 
             if (baseSlot.texture != nullptr)
             {
@@ -439,7 +439,7 @@ namespace Rune
 
             if (instSlot.texture != nullptr)
             {
-                /* Overwrite with Material Inst (if different) */
+                /* Overwrite with Material Inst (if different) #1#
                 if (instSlot.texture != baseSlot.texture)
                 {
                     // Create texture if it does not exist in OpenGL
@@ -455,8 +455,6 @@ namespace Rune
         }
 
         return glMaterialInst;
-    }
-
-    auto Renderer_OpenGL::destroyMaterialInstance(const GlMaterialInst& glMaterialInst) {}
+    }*/
 
 }

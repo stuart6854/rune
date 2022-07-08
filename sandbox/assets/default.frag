@@ -11,6 +11,10 @@ struct Light
 	vec4 position;
 	vec4 direction;
 
+	float constant;
+	float linear;
+	float quadratic;
+
 	vec4 diffuse;
 	vec4 specular;
 };
@@ -20,8 +24,8 @@ layout(std140, binding = 1) uniform Lighting
 {
 	vec4 viewPos;
 	vec3 ambient;
+	
 	int lightCount;
-	vec3 padding;
 	Light lights[MAX_LIGHTS];
 } u_lighting;
 

@@ -6,19 +6,8 @@ namespace Rune
 {
     Mesh::~Mesh()
     {
-        onDestroying();
-    }
-
-    void Mesh::attachObserver(Observer* observer)
-    {
-        m_observers.push_back(observer);
-    }
-
-    void Mesh::detachObserver(Observer* observer)
-    {
-        const auto& it = std::ranges::find(m_observers, observer);
-        if (it != m_observers.end())
-            m_observers.erase(it);
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
+        renderer->destroyMesh(m_id);
     }
 
     auto Mesh::getIndices() const -> const std::vector<u16>&
@@ -57,24 +46,21 @@ namespace Rune
         m_submeshes[index] = submesh;
     }
 
-    void Mesh::apply() const
+    void Mesh::apply()
     {
-        onChanged();
-    }
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
 
-    void Mesh::onDestroying() const
-    {
-        for (const auto& observer : m_observers)
+        if (m_id == 0)
+            m_id = renderer->createMesh(m_vertices, m_indices, m_topology);
+        else
         {
-            observer->destroying(this);
+            renderer->updateMeshVertices(m_id, m_vertices);
+            renderer->updateMeshIndices(m_id, m_indices);
         }
     }
 
-    void Mesh::onChanged() const
+    auto Mesh::getId() const -> u32
     {
-        for (const auto& observer : m_observers)
-        {
-            observer->changed(this);
-        }
+        return m_id;
     }
 }

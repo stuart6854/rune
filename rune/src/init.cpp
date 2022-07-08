@@ -97,7 +97,7 @@ namespace Rune
         material = assetRegistry.get<Material>(matHandle);
         material->setShader(shader);
 
-        material->setTexture("tex", texture);
+        material->getDefaultInstance()->setTexture("tex", texture);
         // MVP
         float aspect = static_cast<float>(props.width) / static_cast<float>(props.height);
         projMatrix = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f);

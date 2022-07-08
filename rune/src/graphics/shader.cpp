@@ -24,18 +24,6 @@ namespace Rune
         m_reflectionData = ShaderReflection::reflect(this);
     }
 
-    void Shader::attachObserver(Observer* observer)
-    {
-        m_observers.push_back(observer);
-    }
-
-    void Shader::detachObserver(Observer* observer)
-    {
-        const auto it = std::ranges::find(m_observers, observer);
-        if (it != m_observers.end())
-            m_observers.erase(it);
-    }
-
     auto Shader::getVertexCode() const -> const std::vector<u8>&
     {
         return m_vertexCode;
@@ -54,21 +42,5 @@ namespace Rune
     void Shader::setReflectionData(const ReflectionData& reflectionData)
     {
         m_reflectionData = reflectionData;
-    }
-
-    void Shader::onDestroying() const
-    {
-        for (const auto& observer : m_observers)
-        {
-            observer->destroying(this);
-        }
-    }
-
-    void Shader::onChanged() const
-    {
-        for (const auto& observer : m_observers)
-        {
-            observer->changed(this);
-        }
     }
 }

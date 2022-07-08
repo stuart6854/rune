@@ -26,6 +26,9 @@ namespace Rune
 
         EventSystem::listen<EventFramebufferSize>([this](const EventFramebufferSize& event)
                                                   { onFramebufferSize(event.width, event.height); });
+
+        m_sceneUbo = m_renderer->createBuffer(sizeof(Scene), &m_sceneData);
+        m_lightingUbo = m_renderer->createBuffer(sizeof(Lighting), &m_lightingData);
     }
 
     void GraphicsSystem::cleanup()
@@ -63,6 +66,11 @@ namespace Rune
         m_renderer->setWindow(m_window);
     }
 
+    auto GraphicsSystem::getRenderer() const -> RendererBase*
+    {
+        return m_renderer.get();
+    }
+
     auto GraphicsSystem::getWindow() const -> WindowSystem*
     {
         return m_window;
@@ -76,8 +84,24 @@ namespace Rune
 
     void GraphicsSystem::beginScene(const glm::mat4 proj, const glm::mat4& view)
     {
-        m_scene.proj = proj;
-        m_scene.view = view;
+        m_sceneData.proj = proj;
+        m_sceneData.view = view;
+        // TODO: Upload to scene UBO
+
+        glm::vec3 viewPos = glm::inverse(m_sceneData.view)[3];
+        {
+            // TODO: TEMPORARY
+            m_lightingData.ambient = { 0.1f, 0.1f, 0.1f };
+            m_lightingData.lightCount = 1;
+            m_lightingData.lights[0].position = { 5, 5, -3 };
+            m_lightingData.lights[0].isDirectional = true;
+            m_lightingData.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
+            // m_lightingData.lights[0].direction = {};
+            m_lightingData.lights[0].diffuseColor = { 1, 1, 1, 1 };
+            m_lightingData.lights[0].specularColor = { 1, 1, 1, 1 };
+        }
+
+        // TODO: Upload lighting data to ubo
     }
 
     void GraphicsSystem::addRenderable(const glm::mat4& transform, Mesh* mesh, MaterialInst* material)
@@ -110,39 +134,31 @@ namespace Rune
 
         m_renderer->beginFrame();
 
-        auto& lighting = m_scene.lighting;
         // TODO: Renderer dedicated uniform buffer, bound once (proj, view, lighting, etc.)
 
-        // TODO: TEMPORARY
-        lighting.ambient = { 0.1f, 0.1f, 0.1f };
-        lighting.lightCount = 1;
-        lighting.lights[0].position = { 5, 5, -3, 1 };
-        lighting.lights[0].direction = glm::vec4{ -1, -1, 1, 1 };
-        // lighting.lights[0].direction = {};
-        lighting.lights[0].diffuse = { 1, 1, 1, 1 };
-        lighting.lights[0].specular = { 1, 1, 1, 1 };
+        m_drawData[0].material->setFloat3("u_material.diffuse", { 1, 1, 1 });
+        m_drawData[0].material->setFloat("u_material.shininess", 32);
 
-        glm::vec3 viewPos = glm::inverse(m_scene.view)[3];
         for (const auto& instance : m_geometryBucket)
         {
             const auto& drawData = m_drawData[instance.drawDataIndex];
-            drawData.material->setMat4("u_renderer.worldMatrix", drawData.transform);
-            drawData.material->setMat4("u_renderer.viewMatrix", m_scene.view);
-            drawData.material->setMat4("u_renderer.projMatrix", m_scene.proj);
-            drawData.material->setFloat3("u_lighting.viewPos", viewPos);
-            drawData.material->setFloat3("u_lighting.ambient", lighting.ambient);
-            drawData.material->setInt("u_lighting.lightCount", lighting.lightCount);
-            drawData.material->setData("u_lighting.lights", sizeof(InternalLight) * lighting.lightCount, lighting.lights.data());
+            m_renderer->bindMaterial(drawData.material);
+            m_renderer->bindUniformBuffer(m_sceneUbo, 0);
+            m_renderer->bindUniformBuffer(m_lightingUbo, 1);
 
-            drawData.material->setFloat3("u_material.diffuse", { 1, 1, 1 });
-            drawData.material->setFloat("u_material.shininess", 32);
+            m_renderer->bindMesh(drawData.mesh);
 
-            m_renderer->draw(drawData.mesh, drawData.material);
+            // TODO: Upload world matrix to scene ubo
+            m_sceneData.world = drawData.transform;
+            m_renderer->updateBuffer(m_sceneUbo, 0, sizeof(Scene), &m_sceneData);
+            m_renderer->updateBuffer(m_lightingUbo, 0, sizeof(Lighting), &m_lightingData);
+
+            m_renderer->draw();
         }
 
         m_renderer->endFrame();
 
-        lighting.lightCount = 0;
+        m_lightingData.lightCount = 0;
         m_shadowBucket.clear();
         m_geometryBucket.clear();
         m_drawData.clear();
@@ -175,7 +191,7 @@ namespace Rune
         key = (key | materialIndex) << 8;
         key = (key | meshIndex);
 
-        CORE_LOG_TRACE("{:B}", key);
+        // CORE_LOG_TRACE("{:B}", key);
 
         return key;
     }

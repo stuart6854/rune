@@ -1,6 +1,7 @@
 #include "rune/graphics/material.hpp"
 
 #include "rune/macros.hpp"
+#include "rune/graphics/graphics.hpp"
 #include "rune/graphics/shader.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -11,7 +12,7 @@
         return {};                                                            \
                                                                               \
     const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex]; \
-    auto value = uniformBuffer.buffer.read<type>(member->byteOffset);         \
+    auto value = uniformBuffer.data.read<type>(member->byteOffset);           \
     return value
 
 #define SET_UNIFORM(type, value_ptr)                                          \
@@ -20,7 +21,12 @@
         return;                                                               \
                                                                               \
     const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex]; \
-    uniformBuffer.buffer.write(value_ptr, sizeof(type), member->byteOffset)
+    uniformBuffer.data.write(value_ptr, sizeof(type), member->byteOffset)
+
+#define UPDATE_UNIFORM_BUFFER()                                                         \
+    auto* renderer = GraphicsSystem::getInstance().getRenderer();                       \
+    void* newData = uniformBuffer.data.readBytes(member->byteSize, member->byteOffset); \
+    renderer->updateBuffer(uniformBuffer.internalId, member->byteOffset, member->byteSize, newData)
 
 namespace Rune
 {
@@ -34,6 +40,9 @@ namespace Rune
         {
             instance.reset();
         }
+
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
+        renderer->destroyMaterial(m_internalId);
     }
 
     auto Material::getShader() const -> Shader*
@@ -46,6 +55,12 @@ namespace Rune
         m_shader = shader;
         // Setup uniform buffers/textures
         initUniforms();
+
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
+        if (m_internalId != 0)
+            renderer->destroyMaterial(m_internalId);
+
+        m_internalId = renderer->createMaterial(m_shader->getVertexCode(), m_shader->getFragmentCode());
 
         // Create default instance
         m_defaultInstance = CreateOwned<MaterialInst>();
@@ -108,6 +123,11 @@ namespace Rune
         return m_textures;
     }
 
+    auto Material::getId() const -> u32
+    {
+        return m_internalId;
+    }
+
     void Material::initUniforms()
     {
         const auto& reflectionData = m_shader->getReflectionData();
@@ -122,7 +142,8 @@ namespace Rune
                     u32 uniformBufferIndex = m_uniformBuffers.size();
                     auto& uniformBuffer = m_uniformBuffers.emplace_back();
                     uniformBuffer.binding = binding.binding;
-                    uniformBuffer.buffer.allocate(binding.bufferSize);
+                    uniformBuffer.data.allocate(binding.bufferSize);
+                    uniformBuffer.data.zeroInitialise();
 
                     for (const auto& bufferMember : binding.bufferMembers)
                     {
@@ -181,7 +202,7 @@ namespace Rune
     void MaterialInst::setInt(const std::string& name, const i32 value) const
     {
         SET_UNIFORM(i32, &value);
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getFloat(const std::string& name) const -> float
@@ -192,7 +213,7 @@ namespace Rune
     void MaterialInst::setFloat(const std::string& name, const float value) const
     {
         SET_UNIFORM(float, &value);
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getFloat2(const std::string& name) const -> glm::vec2
@@ -203,7 +224,7 @@ namespace Rune
     void MaterialInst::setFloat2(const std::string& name, const glm::vec2& value) const
     {
         SET_UNIFORM(glm::vec2, glm::value_ptr(value));
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getFloat3(const std::string& name) const -> glm::vec3
@@ -214,7 +235,7 @@ namespace Rune
     void MaterialInst::setFloat3(const std::string& name, const glm::vec3& value) const
     {
         SET_UNIFORM(glm::vec3, glm::value_ptr(value));
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getFloat4(const std::string& name) const -> glm::vec4
@@ -225,7 +246,7 @@ namespace Rune
     void MaterialInst::setFloat4(const std::string& name, const glm::vec4& value) const
     {
         SET_UNIFORM(glm::vec4, glm::value_ptr(value));
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getMat4(const std::string& name) const -> glm::mat4
@@ -236,7 +257,7 @@ namespace Rune
     void MaterialInst::setMat4(const std::string& name, const glm::mat4& value) const
     {
         SET_UNIFORM(glm::mat4, glm::value_ptr(value));
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     auto MaterialInst::getData(const std::string& name) const -> const void*
@@ -253,8 +274,8 @@ namespace Rune
         RUNE_ENG_ASSERT(size <= member->byteSize, "Uniform write size overflow!");
 
         const auto& uniformBuffer = m_uniformBuffers[member->uniformBufferIndex];
-        uniformBuffer.buffer.write(data, size, member->byteOffset);
-        onUniformChanged(member->uniformBufferIndex, member->byteOffset, member->byteSize);
+        uniformBuffer.data.write(data, size, member->byteOffset);
+        UPDATE_UNIFORM_BUFFER();
     }
 
     void MaterialInst::setTexture(const std::string& name, Texture* texture)
@@ -281,20 +302,9 @@ namespace Rune
         return m_textures;
     }
 
-    void MaterialInst::attachObserver(Observer* observer)
-    {
-        m_observers.push_back(observer);
-    }
-
-    void MaterialInst::detachObserver(Observer* observer)
-    {
-        const auto it = std::ranges::find(m_observers, observer);
-        if (it != m_observers.end())
-            m_observers.erase(it);
-    }
-
     void MaterialInst::initUniforms()
     {
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
         const auto& reflectionData = m_material->getShader()->getReflectionData();
 
         for (const auto& set : reflectionData.sets)
@@ -307,7 +317,8 @@ namespace Rune
                     u32 uniformBufferIndex = m_uniformBuffers.size();
                     auto& uniformBuffer = m_uniformBuffers.emplace_back();
                     uniformBuffer.binding = binding.binding;
-                    uniformBuffer.buffer.allocate(binding.bufferSize);
+                    uniformBuffer.data.allocate(binding.bufferSize);
+                    uniformBuffer.data.zeroInitialise();
 
                     for (const auto& bufferMember : binding.bufferMembers)
                     {
@@ -336,7 +347,11 @@ namespace Rune
         // Copy uniform buffers and textures over
         for (size i = 0; i < m_material->getUniformBuffers().size(); ++i)
         {
-            m_uniformBuffers[i].buffer = m_material->getUniformBuffers()[i].buffer;
+            auto& uniformBuffer = m_uniformBuffers[i];
+            uniformBuffer.data = m_material->getUniformBuffers()[i].data;
+
+            // Create create uniform buffer on gpu
+            uniformBuffer.internalId = renderer->createBuffer(uniformBuffer.data.getSize(), uniformBuffer.data.getData());
         }
 
         for (size i = 0; i < m_material->getTextureSlots().size(); ++i)
@@ -355,21 +370,5 @@ namespace Rune
         }
 
         return &it->second;
-    }
-
-    void MaterialInst::onDestroying() const
-    {
-        for (const auto& observer : m_observers)
-        {
-            observer->destroying(this);
-        }
-    }
-
-    void MaterialInst::onUniformChanged(u32 bufferIndex, u32 offset, u32 size) const
-    {
-        for (const auto& observer : m_observers)
-        {
-            observer->uniformChanged(this, bufferIndex, offset, size);
-        }
     }
 }

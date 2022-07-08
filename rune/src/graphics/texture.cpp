@@ -6,19 +6,8 @@ namespace Rune
 {
     Texture::~Texture()
     {
-        onDestroying();
-    }
-
-    void Texture::attachObserver(Observer* observer)
-    {
-        m_observers.push_back(observer);
-    }
-
-    void Texture::detachObserver(Observer* observer)
-    {
-        const auto it = std::ranges::find(m_observers, observer);
-        if (it != m_observers.end())
-            m_observers.erase(it);
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
+        renderer->destroyTexture(m_internalId);
     }
 
     void Texture::init(const i32 width, const i32 height, const TextureFormat format, const std::vector<u8>& data)
@@ -28,6 +17,9 @@ namespace Rune
         m_format = format;
 
         m_data = data;
+
+        auto* renderer = GraphicsSystem::getInstance().getRenderer();
+        m_internalId = renderer->createTexture(m_width, m_height, m_format, m_data.data());
     }
 
     auto Texture::getWidth() const -> i32
@@ -50,19 +42,8 @@ namespace Rune
         return m_data;
     }
 
-    void Texture::onDestroying() const
+    auto Texture::getInternalId() const -> u32
     {
-        for (const auto& observer : m_observers)
-        {
-            observer->destroying(this);
-        }
-    }
-
-    void Texture::onChanged() const
-    {
-        for (const auto& observer : m_observers)
-        {
-            observer->changed(this);
-        }
+        return m_internalId;
     }
 }

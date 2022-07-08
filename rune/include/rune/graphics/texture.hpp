@@ -17,20 +17,7 @@ namespace Rune
     class Texture : public Asset
     {
     public:
-        class Observer
-        {
-        public:
-            virtual ~Observer() = default;
-
-            virtual void destroying(const Texture* texture) = 0;
-            virtual void changed(const Texture* texture) = 0;
-        };
-
-    public:
         ~Texture() override;
-
-        void attachObserver(Observer* observer);
-        void detachObserver(Observer* observer);
 
         void init(i32 width, i32 height, TextureFormat format, const std::vector<u8>& data);
 
@@ -40,12 +27,10 @@ namespace Rune
 
         auto getData() const -> const std::vector<u8>&;
 
-    protected:
-        void onDestroying() const;
-        void onChanged() const;
+        auto getInternalId() const -> u32;
 
     private:
-        std::vector<Observer*> m_observers;
+        u32 m_internalId{};
 
         i32 m_width{};
         i32 m_height{};

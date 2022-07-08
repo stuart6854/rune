@@ -22,8 +22,9 @@ namespace Rune
     public:
         struct UniformBuffer
         {
+            u32 internalId;
             u32 binding;
-            Buffer buffer;
+            Buffer data;
         };
 
         struct TextureSlot
@@ -53,6 +54,8 @@ namespace Rune
         auto getUniformBuffers() const -> const std::vector<UniformBuffer>&;
         auto getTextureSlots() const -> const std::vector<TextureSlot>&;
 
+        auto getId() const -> u32;
+
     private:
         void initUniforms();
 
@@ -66,6 +69,8 @@ namespace Rune
         auto getUniformBufferMember(const std::string& name) const -> const UniformBufferMember*;
 
     private:
+        u32 m_internalId{};
+
         Shader* m_shader = nullptr;
 
         bool m_doubleSided = false;
@@ -88,19 +93,11 @@ namespace Rune
     class MaterialInst final : public Asset
     {
     public:
-        class Observer
-        {
-        public:
-            virtual ~Observer() = default;
-
-            virtual void destroying(const MaterialInst* materialInst) = 0;
-            virtual void uniformChanged(const MaterialInst* materialInst, u32 bufferIndex, u32 offset, u32 size) = 0;
-        };
-
         struct UniformBuffer
         {
+            u32 internalId;
             u32 binding;
-            Buffer buffer;
+            Buffer data;
         };
 
         struct TextureSlot
@@ -141,9 +138,6 @@ namespace Rune
         auto getUniformBuffers() const -> const std::vector<UniformBuffer>&;
         auto getTextureSlots() const -> const std::vector<TextureSlot>&;
 
-        void attachObserver(Observer* observer);
-        void detachObserver(Observer* observer);
-
     private:
         void initUniforms();
 
@@ -156,12 +150,7 @@ namespace Rune
 
         auto getUniformBufferMember(const std::string& name) const -> const UniformBufferMember*;
 
-        void onDestroying() const;
-        void onUniformChanged(u32 bufferIndex, u32 offset, u32 size) const;
-
     private:
-        std::vector<Observer*> m_observers;
-
         Material* m_material = nullptr;
 
         std::vector<UniformBuffer> m_uniformBuffers;
