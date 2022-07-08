@@ -102,8 +102,11 @@ namespace Rune
         float aspect = static_cast<float>(props.width) / static_cast<float>(props.height);
         projMatrix = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f);
 
-        auto cameraPosition = glm::vec3(0, 0, -5.0f);
-        viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), cameraPosition));
+        auto cameraPosition = glm::vec3(-5.0f, 5.0f, -5.0f);
+        viewMatrix = glm::translate(glm::mat4(1.0f), cameraPosition);
+        viewMatrix = glm::rotate(viewMatrix, glm::radians(45.0f), glm::vec3(0, 1, 0));
+        viewMatrix = glm::rotate(viewMatrix, glm::radians(30.0f), glm::vec3(1, 0, 0));
+        viewMatrix = glm::inverse(viewMatrix);
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
