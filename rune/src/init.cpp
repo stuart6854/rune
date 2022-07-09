@@ -140,6 +140,16 @@ namespace Rune
         if (InputSystem::getInstance().isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
             CORE_LOG_INFO("Mouse Btn held");
 
+        // Toggle fullscreen
+        if (InputSystem::getInstance().isKeyDown(Input::KEY_F11))
+        {
+            auto mode = WindowSystem::getInstance().getWindowMode();
+            if (mode == WindowMode::eWindowed)
+                WindowSystem::getInstance().setWindowMode(WindowMode::eFullscreen);
+            else
+                WindowSystem::getInstance().setWindowMode(WindowMode::eWindowed);
+        }
+
         constexpr float radius = 5.0f;
         auto time = Time::getTimeSinceStartup() * 50.0f;
         glm::vec3 lightPos = { glm::cos(glm::radians(time)) * radius, 5.0f, glm::sin(glm::radians(time)) * radius };
