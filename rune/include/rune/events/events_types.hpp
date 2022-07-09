@@ -44,4 +44,10 @@ namespace Rune
     {
         i32 btn;
     };
+
+    struct EventCursorPos
+    {
+        double x;
+        double y;
+    };
 }

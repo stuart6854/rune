@@ -70,7 +70,7 @@ namespace Rune
         windowInst.createWindow(props);
 
         auto& inputInst = InputSystem::getInstance();
-        inputInst.init();
+        inputInst.init({ props.width, props.height });
 
         // TODO: Get rendering settings from config
         auto& graphicsInst = GraphicsSystem::getInstance();
@@ -139,6 +139,13 @@ namespace Rune
             CORE_LOG_INFO("Mouse Btn up");
         if (InputSystem::getInstance().isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
             CORE_LOG_INFO("Mouse Btn held");
+
+        /*auto cursorPos = InputSystem::getInstance().getCursorPos();
+        CORE_LOG_INFO("{}, {}", cursorPos.x, cursorPos.y);*/
+
+        auto cursorDelta = InputSystem::getInstance().getCursorDelta();
+        if (cursorDelta != glm::vec2{})
+            CORE_LOG_INFO("{}, {}", cursorDelta.x, cursorDelta.y);
 
         // Toggle fullscreen
         if (InputSystem::getInstance().isKeyDown(Input::KEY_F11))

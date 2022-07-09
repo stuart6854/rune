@@ -198,6 +198,11 @@ namespace Rune
                                            EventSystem::notify(EventMouseBtnUp{ btn });
                                    });
 
+        glfwSetCursorPosCallback(static_cast<GLFWwindow*>(m_windowPtr),
+                                 [](GLFWwindow* window, const double x, const double y) {
+                                     EventSystem::notify(EventCursorPos{ x, y });
+                                 });
+
         return true;
     }
 
