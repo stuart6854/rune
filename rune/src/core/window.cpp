@@ -178,6 +178,15 @@ namespace Rune
                                    EventSystem::notify(EventKeyUp{ key });
                            });
 
+        glfwSetMouseButtonCallback(static_cast<GLFWwindow*>(m_windowPtr),
+                                   [](GLFWwindow* window, const int btn, const int action, int)
+                                   {
+                                       if (action == GLFW_PRESS)
+                                           EventSystem::notify(EventMouseBtnDown{ btn });
+                                       else if (action == GLFW_RELEASE)
+                                           EventSystem::notify(EventMouseBtnUp{ btn });
+                                   });
+
         return true;
     }
 

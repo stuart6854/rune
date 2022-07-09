@@ -133,6 +133,13 @@ namespace Rune
         if (InputSystem::getInstance().isKeyHeld(Input::KEY_W))
             CORE_LOG_INFO("Key held");
 
+        if (InputSystem::getInstance().isMouseButtonDown(Input::MOUSE_BUTTON_RIGHT))
+            CORE_LOG_INFO("Mouse Btn down");
+        if (InputSystem::getInstance().isMouseButtonUp(Input::MOUSE_BUTTON_RIGHT))
+            CORE_LOG_INFO("Mouse Btn up");
+        if (InputSystem::getInstance().isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
+            CORE_LOG_INFO("Mouse Btn held");
+
         constexpr float radius = 5.0f;
         auto time = Time::getTimeSinceStartup() * 50.0f;
         glm::vec3 lightPos = { glm::cos(glm::radians(time)) * radius, 5.0f, glm::sin(glm::radians(time)) * radius };

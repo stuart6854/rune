@@ -34,4 +34,14 @@ namespace Rune
     {
         i32 key;
     };
+
+    struct EventMouseBtnDown
+    {
+        i32 btn;
+    };
+
+    struct EventMouseBtnUp
+    {
+        i32 btn;
+    };
 }
