@@ -158,6 +158,17 @@ namespace Rune
         glfwSetWindowCloseCallback(static_cast<GLFWwindow*>(m_windowPtr),
                                    [](GLFWwindow* window) { EventSystem::notify(EventWindowClose{}); });
 
+        glfwSetWindowSizeCallback(static_cast<GLFWwindow*>(m_windowPtr),
+                                  [](GLFWwindow* window, const int width, const int height)
+                                  {
+                                      /*auto* windowData = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                                      windowData->width = width;
+                                      windowData->height = height;*/
+                                      // CORE_LOG_TRACE("Window Size: {}, {}", width, height);
+
+                                      EventSystem::notify(EventWindowSize{ width, height });
+                                  });
+
         glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(m_windowPtr),
                                        [](GLFWwindow* window, const int width, const int height)
                                        {
