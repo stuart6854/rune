@@ -65,7 +65,12 @@ namespace Rune
 
     auto WindowSystem::getWindowMode() const -> WindowMode
     {
-        return m_data.mode;
+        return m_data.windowMode;
+    }
+
+    auto WindowSystem::getCursorMode() const -> CursorMode
+    {
+        return m_data.cursorMode;
     }
 
     void WindowSystem::setTitle(const std::string& title)
@@ -92,12 +97,12 @@ namespace Rune
 
     void WindowSystem::setWindowMode(const WindowMode mode)
     {
-        if (mode == m_data.mode)
+        if (mode == m_data.windowMode)
             return;
 
         auto* glfwWindow = static_cast<GLFWwindow*>(m_windowPtr);
 
-        m_data.mode = mode;
+        m_data.windowMode = mode;
         if (mode == WindowMode::eWindowed)
         {
             glfwSetWindowMonitor(glfwWindow, nullptr, 0, 0, m_data.width, m_data.height, GLFW_DONT_CARE);
@@ -122,6 +127,31 @@ namespace Rune
             EventSystem::notify(EventFramebufferSize{ m_data.width, m_data.height });
 
             CORE_LOG_TRACE("Borderless Window: {}x{}x{}hz", m_data.width, m_data.height, videoMode->refreshRate);
+        }
+    }
+
+    void WindowSystem::setCursorMode(const CursorMode mode)
+    {
+        if (mode == m_data.cursorMode)
+            return;
+
+        m_data.cursorMode = mode;
+
+        auto* glfwWindow = static_cast<GLFWwindow*>(m_windowPtr);
+
+        if (mode == CursorMode::eNormal)
+        {
+            glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        else if (mode == CursorMode::eDisabled)
+        {
+            glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            if (glfwRawMouseMotionSupported())
+                glfwSetInputMode(glfwWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+        else if (mode == CursorMode::eHidden)
+        {
+            glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
         }
     }
 

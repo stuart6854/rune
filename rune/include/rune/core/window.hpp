@@ -13,6 +13,13 @@ namespace Rune
         eBorderless
     };
 
+    enum class CursorMode : u8
+    {
+        eNormal = 0,
+        eDisabled,
+        eHidden
+    };
+
     class WindowSystem
     {
     public:
@@ -35,12 +42,14 @@ namespace Rune
         auto getHeight() const -> u32;
         bool isVSync() const;
         auto getWindowMode() const -> WindowMode;
+        auto getCursorMode() const -> CursorMode;
 
         void setTitle(const std::string& title);
         void setWidth(u32 value) const;
         void setHeight(u32 value) const;
         void setVSync(bool vSync);
         void setWindowMode(WindowMode mode);
+        void setCursorMode(CursorMode mode);
 
         bool createWindow(const WindowProps& props = {});
         void update() const;
@@ -52,7 +61,8 @@ namespace Rune
             i32 width;
             i32 height;
             bool vSync;
-            WindowMode mode;
+            WindowMode windowMode;
+            CursorMode cursorMode;
         };
         WindowData m_data;
         void* m_windowPtr;
