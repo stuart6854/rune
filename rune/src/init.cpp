@@ -34,7 +34,11 @@ namespace Rune
         Material* material = nullptr;
 
         float rotY = 0;
+
         glm::mat4 projMatrix;
+
+        glm::vec3 cameraPos = { -5.0f, 5.0f, -5.0f };
+        glm::vec3 cameraRot = { 30.0f, 45.0f, 0 };
         glm::mat4 viewMatrix;
 
     }  // namespace
@@ -107,8 +111,7 @@ namespace Rune
         float aspect = static_cast<float>(props.width) / static_cast<float>(props.height);
         projMatrix = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f);
 
-        auto cameraPosition = glm::vec3(-5.0f, 5.0f, -5.0f);
-        viewMatrix = glm::translate(glm::mat4(1.0f), cameraPosition);
+        viewMatrix = glm::translate(glm::mat4(1.0f), cameraPos);
         viewMatrix = glm::rotate(viewMatrix, glm::radians(45.0f), glm::vec3(0, 1, 0));
         viewMatrix = glm::rotate(viewMatrix, glm::radians(30.0f), glm::vec3(1, 0, 0));
         viewMatrix = glm::inverse(viewMatrix);
@@ -126,35 +129,71 @@ namespace Rune
         InputSystem::getInstance().newFrame();
         WindowSystem::getInstance().update();
 
-        if (InputSystem::getInstance().isKeyDown(Input::KEY_W))
-            CORE_LOG_INFO("Key down");
-        if (InputSystem::getInstance().isKeyUp(Input::KEY_W))
-            CORE_LOG_INFO("Key up");
-        if (InputSystem::getInstance().isKeyHeld(Input::KEY_W))
-            CORE_LOG_INFO("Key held");
-
-        if (InputSystem::getInstance().isMouseButtonDown(Input::MOUSE_BUTTON_RIGHT))
-            CORE_LOG_INFO("Mouse Btn down");
-        if (InputSystem::getInstance().isMouseButtonUp(Input::MOUSE_BUTTON_RIGHT))
-            CORE_LOG_INFO("Mouse Btn up");
-        if (InputSystem::getInstance().isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
-            CORE_LOG_INFO("Mouse Btn held");
-
-        /*auto cursorPos = InputSystem::getInstance().getCursorPos();
-        CORE_LOG_INFO("{}, {}", cursorPos.x, cursorPos.y);*/
-
-        auto cursorDelta = InputSystem::getInstance().getCursorDelta();
-        if (cursorDelta != glm::vec2{})
-            CORE_LOG_INFO("{}, {}", cursorDelta.x, cursorDelta.y);
-
-        // Toggle fullscreen
-        if (InputSystem::getInstance().isKeyDown(Input::KEY_F11))
+        /* Testing */
         {
-            auto mode = WindowSystem::getInstance().getWindowMode();
-            if (mode == WindowMode::eWindowed)
-                WindowSystem::getInstance().setWindowMode(WindowMode::eFullscreen);
-            else
-                WindowSystem::getInstance().setWindowMode(WindowMode::eWindowed);
+            /*if (InputSystem::getInstance().isKeyDown(Input::KEY_W))
+                CORE_LOG_INFO("Key down");
+            if (InputSystem::getInstance().isKeyUp(Input::KEY_W))
+                CORE_LOG_INFO("Key up");
+            if (InputSystem::getInstance().isKeyHeld(Input::KEY_W))
+                CORE_LOG_INFO("Key held");*/
+
+            /*if (InputSystem::getInstance().isMouseButtonDown(Input::MOUSE_BUTTON_RIGHT))
+                CORE_LOG_INFO("Mouse Btn down");
+            if (InputSystem::getInstance().isMouseButtonUp(Input::MOUSE_BUTTON_RIGHT))
+                CORE_LOG_INFO("Mouse Btn up");
+            if (InputSystem::getInstance().isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
+                CORE_LOG_INFO("Mouse Btn held");*/
+
+            /*auto cursorPos = InputSystem::getInstance().getCursorPos();
+            CORE_LOG_INFO("{}, {}", cursorPos.x, cursorPos.y);*/
+
+            /*auto cursorDelta = InputSystem::getInstance().getCursorDelta();
+            if (cursorDelta != glm::vec2{})
+                CORE_LOG_INFO("{}, {}", cursorDelta.x, cursorDelta.y);*/
+        }
+
+        /* Controls */
+        {
+            auto& input = InputSystem::getInstance();
+            // Toggle fullscreen
+            if (input.isKeyDown(Input::KEY_F11))
+            {
+                auto mode = WindowSystem::getInstance().getWindowMode();
+                if (mode == WindowMode::eWindowed)
+                    WindowSystem::getInstance().setWindowMode(WindowMode::eFullscreen);
+                else
+                    WindowSystem::getInstance().setWindowMode(WindowMode::eWindowed);
+            }
+
+            // Camera
+            {
+                // Rotation
+                if (input.isMouseButtonHeld(Input::MOUSE_BUTTON_RIGHT))
+                {
+                    WindowSystem::getInstance().setCursorMode(CursorMode::eDisabled);
+                    auto cursorDelta = input.getCursorDelta();
+                    if (cursorDelta != glm::vec2{})
+                    {
+                        constexpr float sensitivity = 150.0f;
+                        cameraRot.x += -cursorDelta.y * sensitivity;  // Pitch
+                        cameraRot.y += cursorDelta.x * sensitivity;   // Yaw
+                        cameraRot.z = 0.0f;
+                    }
+                }
+                else
+                {
+                    WindowSystem::getInstance().setCursorMode(CursorMode::eNormal);
+                }
+
+                // Position
+
+                // View Matrix
+                viewMatrix = glm::translate(glm::mat4(1.0f), cameraPos);
+                viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRot.y), glm::vec3(0, 1, 0));
+                viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRot.x), glm::vec3(1, 0, 0));
+                viewMatrix = glm::inverse(viewMatrix);
+            }
         }
 
         constexpr float radius = 5.0f;
