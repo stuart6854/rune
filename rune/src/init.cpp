@@ -38,7 +38,7 @@ namespace Rune
         glm::mat4 projMatrix;
 
         glm::vec3 cameraPos = { -5.0f, 5.0f, -5.0f };
-        glm::vec3 cameraRot = { 30.0f, 45.0f, 0 };
+        glm::vec3 cameraRot = { 0.0f, 0.0f, 0 };
         glm::mat4 viewMatrix;
 
     }  // namespace
@@ -187,6 +187,28 @@ namespace Rune
                 }
 
                 // Position
+                glm::vec3 forward{
+                    glm::sin(glm::radians(cameraRot.y)) * glm::cos(glm::radians(cameraRot.x)),
+                    -glm::sin(glm::radians(cameraRot.x)),
+                    glm::cos(glm::radians(cameraRot.y)) * glm::cos(glm::radians(cameraRot.x)),
+                };
+                forward = glm::normalize(forward);
+                glm::vec3 right = glm::normalize(glm::cross({ 0, 1, 0 }, forward));
+                glm::vec3 up = glm::normalize(glm::cross(forward, right));
+
+                float moveSpeed = input.isKeyHeld(Input::KEY_LEFT_SHIFT) ? 20.0f : 5.0f;
+                if (input.isKeyHeld(Input::KEY_W))
+                    cameraPos += forward * moveSpeed * Time::getDeltaTime();
+                if (input.isKeyHeld(Input::KEY_S))
+                    cameraPos += -forward * moveSpeed * Time::getDeltaTime();
+                if (input.isKeyHeld(Input::KEY_D))
+                    cameraPos += right * moveSpeed * Time::getDeltaTime();
+                if (input.isKeyHeld(Input::KEY_A))
+                    cameraPos += -right * moveSpeed * Time::getDeltaTime();
+                if (input.isKeyHeld(Input::KEY_SPACE))
+                    cameraPos += up * moveSpeed * Time::getDeltaTime();
+                if (input.isKeyHeld(Input::KEY_LEFT_ALT))
+                    cameraPos += -up * moveSpeed * Time::getDeltaTime();
 
                 // View Matrix
                 viewMatrix = glm::translate(glm::mat4(1.0f), cameraPos);
