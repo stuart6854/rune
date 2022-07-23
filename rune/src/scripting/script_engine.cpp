@@ -1,9 +1,12 @@
 #include "rune/scripting/script_engine.hpp"
 
+#include "glm/geometric.hpp"
 #include "rune/macros.hpp"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+
+#include <glm/ext/vector_float3.hpp>
 
 namespace Rune
 {
@@ -106,6 +109,26 @@ namespace Rune
         }
     }
 
+    static void NativeLog(MonoString* string, int value)
+    {
+        char* cStr = mono_string_to_utf8(string);
+        std::string str = cStr;
+        mono_free(cStr);
+        LOG_INFO("{}: {}", str, value);
+    }
+
+    static void NativeLog_Vec3(glm::vec3* param, glm::vec3* outResult)
+    {
+        LOG_INFO("Value: {},{},{}", param->x, param->y, param->z);
+        *outResult = glm::normalize(*param);
+    }
+
+    static float NativeLog_Vec3Dot(glm::vec3* param)
+    {
+        LOG_INFO("Value: {},{},{}", param->x, param->y, param->z);
+        return glm::dot(*param, *param);
+    }
+
     void ScriptEngine::initMono()
     {
         mono_set_assemblies_path("mono/lib");
@@ -123,6 +146,11 @@ namespace Rune
         s_data->coreAssembly = loadCSharpAssembly("assets/scripts/Rune-ScriptCore.dll");
         printAssemblyTypes(s_data->coreAssembly);
 
+        mono_add_internal_call("Rune.Main::NativeLog", NativeLog);
+        mono_add_internal_call("Rune.Main::NativeLog_Vector3", NativeLog_Vec3);
+        mono_add_internal_call("Rune.Main::NativeLog_Vector3Dot", NativeLog_Vec3Dot);
+
+        // Move this maybe
         MonoImage* assemblyImage = mono_assembly_get_image(s_data->coreAssembly);
         MonoClass* monoClass = mono_class_from_name(assemblyImage, "Rune", "Main");
 
