@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace Rune
 {
@@ -15,20 +14,20 @@ namespace Rune
         }
     }
 
-    public class Main
+    public class Entity
     {
         public float FloatVar { get; set; }
 
-        public Main()
+        public Entity()
         {
             Console.WriteLine("Main constructor!");
 
-            NativeLog("Stuart", 24);
+            InternalCalls.NativeLog("Stuart", 24);
 
             Vector3 pos = new Vector3(5, 2.5f, 1);
-            NativeLog_Vector3(ref pos, out Vector3 result);
+            InternalCalls.NativeLog_Vector3(ref pos, out Vector3 result);
             Console.WriteLine($"{result.x},{result.y},{result.z}");
-            Console.WriteLine("{0}", NativeLog_Vector3Dot(ref pos));
+            Console.WriteLine("{0}", InternalCalls.NativeLog_Vector3Dot(ref pos));
         }
 
         public void PrintMessage()
@@ -45,14 +44,5 @@ namespace Rune
         {
             Console.WriteLine($"C# says: {message}");
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern void NativeLog(string text, int parameter);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern void NativeLog_Vector3(ref Vector3 param, out Vector3 outResult);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern float NativeLog_Vector3Dot(ref Vector3 param);
     }
 }

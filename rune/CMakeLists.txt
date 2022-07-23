@@ -32,6 +32,7 @@ file(GLOB
 	"${source_dir}/core/config.cpp"
 	"${source_dir}/core/window.cpp"
 	"${source_dir}/scripting/script_engine.cpp"
+	"${source_dir}/scripting/script_glue.cpp"
 	"${source_dir}/graphics/renderer.cpp"
 	"${source_dir}/graphics/graphics.cpp"
 	"${source_dir}/graphics/texture.cpp"
