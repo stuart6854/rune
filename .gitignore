@@ -1,12 +1,15 @@
 ## Build files
 /out
 /build
+
 /bin
 /bin-int
 /rune/lib/glad/bin
 /rune/lib/glad/bin-int
 /rune/lib/spirv_reflect/bin
 /rune/lib/spirv_reflect/bin-int
+**/obj/**
+sandbox/assets/scripts/**
 
 ## VS Project Files
 *.sln
@@ -16,5 +19,7 @@
 
 ## Settings
 *.DotSettings.user
+*.DotSettings
 # RenderDoc Capture Settings
 *.cap
+App.config
