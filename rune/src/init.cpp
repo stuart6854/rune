@@ -11,6 +11,7 @@
 #include "rune/assets/asset_factory.hpp"
 #include "rune/assets/asset_registry.hpp"
 #include "rune/events/events.hpp"
+#include "rune/scripting/script_engine.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
@@ -80,6 +81,8 @@ namespace Rune
         auto& graphicsInst = GraphicsSystem::getInstance();
         graphicsInst.init(RenderingApi::eOpenGL);
         graphicsInst.setWindow(&WindowSystem::getInstance());
+
+        ScriptEngine::getInstance().init();
 
         AssetRegistry::getInstance().init();
 
@@ -259,6 +262,7 @@ namespace Rune
 
         // Cleanup engine subsystems
         AssetRegistry::getInstance().cleanup();
+        ScriptEngine::getInstance().shutdown();
         GraphicsSystem::getInstance().cleanup();
         InputSystem::getInstance().cleanup();
         WindowSystem::getInstance().cleanup();

@@ -15,7 +15,9 @@ target_link_libraries(sandbox rune)
 target_include_directories(sandbox PRIVATE "${RUNE_DIR}/include")
 
 add_custom_target(copy_assets
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets"  "${CMAKE_CURRENT_BINARY_DIR}/assets"
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/config"  "${CMAKE_CURRENT_BINARY_DIR}/config"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/config" "${CMAKE_CURRENT_BINARY_DIR}/config"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/mono" "${CMAKE_CURRENT_BINARY_DIR}/mono"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/rune/lib/mono/bin/${CMAKE_BUILD_TYPE}/mono-2.0-sgen.dll" "${CMAKE_CURRENT_BINARY_DIR}"
 )
 add_dependencies(sandbox copy_assets)

@@ -31,6 +31,7 @@ file(GLOB
 	"${source_dir}/core/log.cpp"
 	"${source_dir}/core/config.cpp"
 	"${source_dir}/core/window.cpp"
+	"${source_dir}/scripting/script_engine.cpp"
 	"${source_dir}/graphics/renderer.cpp"
 	"${source_dir}/graphics/graphics.cpp"
 	"${source_dir}/graphics/texture.cpp"
@@ -144,3 +145,7 @@ target_include_directories(rune PUBLIC "${ASSIMP_DIR}/include")
 # Link SPIRV_Reflect
 target_link_libraries(rune PUBLIC spirv_reflect)
 target_include_directories(rune PUBLIC "${SPIRV_REFLECT_DIR}")
+
+# Link Mono
+add_subdirectory(lib/mono)
+target_link_libraries(rune PUBLIC mono)
