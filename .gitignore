@@ -1,6 +1,9 @@
 ## Build files
 /out
 /build
+**/bin/**
+**/obj/**
+sandbox/assets/scripts/**
 
 /rune/bin
 /rune/bin-int
