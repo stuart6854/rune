@@ -2,8 +2,10 @@
 /out
 /build
 
-/bin
-/bin-int
+/rune/bin
+/rune/bin-int
+/sandbox/bin
+/sandbox/bin-int
 /rune/lib/glad/bin
 /rune/lib/glad/bin-int
 /rune/lib/spirv_reflect/bin
@@ -16,6 +18,7 @@ sandbox/assets/scripts/**
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.csproj
 
 ## Settings
 *.DotSettings.user

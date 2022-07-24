@@ -1,7 +1,6 @@
 -- Declare Library
 function UseGLFW()
-    defines {}
-    libdirs { "rune/lib/glfw/lib" }
+    libdirs { "%{wks.location}/rune/lib/glfw/lib" }
     links { "glfw3.lib" }
-    externalincludedirs { "rune/lib/glfw/include" }
+    externalincludedirs { "%{wks.location}/rune/lib/glfw/include" }
 end

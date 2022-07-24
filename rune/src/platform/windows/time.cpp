@@ -1,4 +1,7 @@
 #include "pch.hpp"
+
+#ifdef RUNE_PLATFORM_WINDOWS
+
 #include "rune/core/time.hpp"
 
 #include <GLFW/glfw3.h>
@@ -25,3 +28,5 @@ namespace Rune
         s_lastFrameTime = currentTime;
     }
 }
+
+#endif

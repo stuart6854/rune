@@ -1,5 +1,4 @@
 -- Declare Library
 function UseSpdlog()
-    defines {}
-    externalincludedirs { "rune/lib/spdlog/include" }
+    externalincludedirs { "%{wks.location}/rune/lib/spdlog/include" }
 end

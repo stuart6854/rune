@@ -1,4 +1,4 @@
 -- Declare Library
 function UseTOMLPP()
-    externalincludedirs { "rune/lib/tomlplusplus/include" }
+    externalincludedirs { "%{wks.location}/rune/lib/tomlplusplus/include" }
 end

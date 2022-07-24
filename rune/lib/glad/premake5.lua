@@ -1,7 +1,7 @@
 -- Declare Library
 function UseGlad()
     links { "Glad" }
-    externalincludedirs { "rune/lib/glad/include" }
+    externalincludedirs { "%{wks.location}/rune/lib/glad/include" }
 end
 
 project "Glad"

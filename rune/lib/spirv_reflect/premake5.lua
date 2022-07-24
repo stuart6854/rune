@@ -1,6 +1,6 @@
 -- Declare Library
 function UseSPIRVReflect()
-    externalincludedirs { "rune/lib/spirv_reflect" }
+    externalincludedirs { "%{wks.location}/rune/lib/spirv_reflect" }
     links { "SPIRV-Reflect" }
 end
 

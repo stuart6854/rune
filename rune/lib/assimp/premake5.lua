@@ -1,8 +1,7 @@
 -- Declare Library
 function UseAssimp()
-    defines {}
-    externalincludedirs { "rune/lib/assimp/include" }
-    libdirs { "rune/lib/assimp/lib" }
+    externalincludedirs { "%{wks.location}/rune/lib/assimp/include" }
+    libdirs { "%{wks.location}/rune/lib/assimp/lib" }
 
     filter "configurations:Debug"
         links { "assimp-vc143-mtd.lib" }
