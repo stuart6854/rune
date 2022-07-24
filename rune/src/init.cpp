@@ -30,6 +30,7 @@ namespace Rune
         // static WindowSystem s_windowSystem;
         // InputSystem& s_inputSystem = InputSystem::getInstance();
 
+        Mesh* testSceneMesh = nullptr;
         Mesh* mesh = nullptr;
         Texture* texture = nullptr;
         Shader* shader = nullptr;
@@ -91,6 +92,11 @@ namespace Rune
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
         assetRegistry.registerFactory<MeshFactory>(AssetType::eMesh);
         assetRegistry.registerFactory<ShaderFactory>(AssetType::eShader);
+
+        // Load test_scene model
+        auto testSceneHandle = assetRegistry.add("assets/models/test_scene.fbx");
+        assetRegistry.load(testSceneHandle);
+        testSceneMesh = assetRegistry.get<Mesh>(testSceneHandle);
 
         // auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
         auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
@@ -239,6 +245,8 @@ namespace Rune
         lighting.lights[0].specularColor = { 1, 1, 1, 1 };
 
         GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix, lighting);
+
+        GraphicsSystem::getInstance().addRenderable(glm::mat4(1.0f), testSceneMesh, material->getDefaultInstance());
 
         rotY += 5.0f * Time::getDeltaTime();
 
