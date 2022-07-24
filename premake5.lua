@@ -39,11 +39,6 @@ function UseRune()
 
     UseSpdlog()
 
-    defines
-    {
-        "SPDLOG_COMPILED_LIB"
-    }
-
     filter "system:windows"
         defines { "RUNE_PLATFORM_WINDOWS" }
 
