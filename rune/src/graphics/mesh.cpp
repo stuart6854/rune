@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/graphics/mesh.hpp"
 
 #include "rune/graphics/graphics.hpp"

@@ -1,9 +1,10 @@
+#include "pch.hpp"
 #include "rune/core/config.hpp"
 
 #include "rune/macros.hpp"
 
 #define TOML_EXCEPTIONS 0
-#include <toml++/toml.h>
+#include <toml++/toml.hpp>
 
 namespace Rune
 {

@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/utility/guid.hpp"
 
 #include "rune/maths/random.hpp"

@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/utility/buffer.hpp"
 
 #include "rune/macros.hpp"

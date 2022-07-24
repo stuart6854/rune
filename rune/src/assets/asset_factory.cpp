@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/assets/asset_factory.hpp"
 
 #include "rune/macros.hpp"
@@ -6,15 +7,14 @@
 #include "rune/graphics/shader.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "assimp/scene.h"
-
 #include <stb/stb_image.h>
 
+#include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
 #define TOML_EXCEPTIONS 0
-#include <toml++/toml.h>
+#include <toml++/toml.hpp>
 
 #include <filesystem>
 

@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/events/events.hpp"
 
 namespace Rune

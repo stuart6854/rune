@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/assets/asset.hpp"
 
 namespace Rune

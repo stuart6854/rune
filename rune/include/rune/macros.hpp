@@ -2,14 +2,14 @@
 
 #include "pch.hpp"
 
-#if defined(WIN32)
+#if RUNE_PLATFORM_WINDOWS
     #define UNNAMED_DEBUG_BREAK() __debugbreak()
-#elif defined(__APPLE__) || defined(__MACH__)
+#elif RUNE_PLATFORM_APPLE
     #error Apple platforms are not currently supported!
-#elif defined(__linux__)
+#elif RUNE_PLATFORM_LINUX
     #include <signal.h>
     #define UNNAMED_DEBUG_BREAK() raise(SIGTRAP)
-#elif defined(__ANDROID__)
+#elif RUNE_PLATFORM_ANDROID
     #error Android platform is not currently supported!
 #else
     #error Unknown platform is not currently supported!

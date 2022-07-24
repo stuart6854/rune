@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/graphics/material.hpp"
 
 #include "rune/macros.hpp"

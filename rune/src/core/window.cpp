@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/core/window.hpp"
 
 #include "rune/init.hpp"

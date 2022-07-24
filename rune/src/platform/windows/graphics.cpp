@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/graphics/graphics.hpp"
 
 #include "platform/opengl/renderer.hpp"

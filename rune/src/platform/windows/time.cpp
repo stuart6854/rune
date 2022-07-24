@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/core/time.hpp"
 
 #include <GLFW/glfw3.h>

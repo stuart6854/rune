@@ -142,12 +142,12 @@ namespace Rune
 
         constexpr u32 KEY_LAST = KEY_MENU;
 
-        constexpr u32 MOD_SHIFT = 0x0001;
-        constexpr u32 MOD_CONTROL = 0x0002;
-        constexpr u32 MOD_ALT = 0x0004;
-        constexpr u32 MOD_SUPER = 0x0008;
-        constexpr u32 MOD_CAPS_LOCK = 0x0010;
-        constexpr u32 MOD_NUM_LOCK = 0x0020;
+        constexpr u32 KEY_MOD_SHIFT = 0x0001;
+        constexpr u32 KEY_MOD_CONTROL = 0x0002;
+        constexpr u32 KEY_MOD_ALT = 0x0004;
+        constexpr u32 KEY_MOD_SUPER = 0x0008;
+        constexpr u32 KEY_MOD_CAPS_LOCK = 0x0010;
+        constexpr u32 KEY_MOD_NUM_LOCK = 0x0020;
 
         constexpr u32 MOUSE_BUTTON_1 = 0;
         constexpr u32 MOUSE_BUTTON_2 = 1;

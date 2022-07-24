@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/assets/asset_registry.hpp"
 
 #include <filesystem>

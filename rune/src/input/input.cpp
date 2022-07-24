@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include "rune/input/input.hpp"
 
 #include "glm/common.hpp"

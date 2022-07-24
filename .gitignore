@@ -3,6 +3,10 @@
 /build
 /bin
 /bin-int
+/rune/lib/glad/bin
+/rune/lib/glad/bin-int
+/rune/lib/spirv_reflect/bin
+/rune/lib/spirv_reflect/bin-int
 
 ## VS Project Files
 *.sln
