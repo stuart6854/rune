@@ -1,6 +1,14 @@
 ## Build files
 /out
 /build
+/bin
+/bin-int
+
+## VS Project Files
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 
 ## Settings
 *.DotSettings.user
