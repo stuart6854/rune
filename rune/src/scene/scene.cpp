@@ -1,6 +1,7 @@
 ﻿#include "pch.hpp"
 #include "rune/scene/scene.hpp"
 
+#include "rune/graphics/graphics.hpp"
 #include "rune/scene/components.hpp"
 #include "rune/scene/entity.hpp"
 
@@ -12,7 +13,18 @@ namespace Rune
 
     void Scene::cleanup() {}
 
-    void Scene::update() {}
+    void Scene::update()
+    {
+        {
+            auto view = m_registry.view<Transform, MeshRenderer>();
+            for (const auto& entity : view)
+            {
+                auto [transform, renderer] = view.get(entity);
+
+                GraphicsSystem::getInstance().addRenderable(glm::mat4(1.0f), renderer.mesh, renderer.material);
+            }
+        }
+    }
 
     auto Scene::getRegistry() -> entt::registry&
     {

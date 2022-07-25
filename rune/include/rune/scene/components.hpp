@@ -12,6 +12,9 @@
 
 namespace Rune
 {
+    class MaterialInst;
+    class Mesh;
+
     struct EntityHeader
     {
         std::string name;
@@ -27,5 +30,13 @@ namespace Rune
         glm::vec3 scale = { 1, 1, 1 };
 
         COMPONENT_DEFAULT_CTORS(Transform)
+    };
+
+    struct MeshRenderer
+    {
+        Mesh* mesh;
+        MaterialInst* material;
+
+        COMPONENT_DEFAULT_CTORS(MeshRenderer)
     };
 }
