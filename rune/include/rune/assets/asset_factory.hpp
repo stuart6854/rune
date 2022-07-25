@@ -1,3 +1,5 @@
+// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
 #pragma once
 
 #include "asset.hpp"

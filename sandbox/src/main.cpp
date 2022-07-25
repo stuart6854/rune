@@ -1,3 +1,5 @@
+// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
 #include <rune.hpp>
 
 class Sandbox : public Rune::Game

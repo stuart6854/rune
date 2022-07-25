@@ -1,3 +1,5 @@
+// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
 #include "pch.hpp"
 #include "rune/init.hpp"
 
@@ -164,7 +166,7 @@ namespace Rune
         auto entity = scene->createEntity();
         auto name = entity.getName();
         auto* transform = entity.add<Transform>();
-        transform->setPosition({8, 3, 10});
+        transform->setPosition({ 8, 3, 10 });
 
         auto* renderer = entity.add<MeshRenderer>();
         renderer->mesh = mesh;

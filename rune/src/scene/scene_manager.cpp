@@ -1,4 +1,6 @@
-﻿#include "pch.hpp"
+﻿// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
+#include "pch.hpp"
 #include "rune/scene/scene_manager.hpp"
 
 #include "rune/macros.hpp"

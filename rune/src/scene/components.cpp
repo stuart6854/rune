@@ -1,4 +1,6 @@
-﻿#include "pch.hpp"
+﻿// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
+#include "pch.hpp"
 #include "rune/scene/components.hpp"
 
 #include <glm/gtx/quaternion.hpp>

@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
+#pragma once
 
 #include <entt/entity/registry.hpp>
 
