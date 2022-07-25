@@ -34,6 +34,7 @@ project "Rune"
     UseAssimp()
     UseSTB()
     UseTOMLPP()
+    UseEntt()
     UseMono()
 
     links
