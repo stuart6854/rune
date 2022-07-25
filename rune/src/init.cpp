@@ -13,6 +13,8 @@
 #include "rune/assets/asset_factory.hpp"
 #include "rune/assets/asset_registry.hpp"
 #include "rune/events/events.hpp"
+#include "rune/scene/scene.hpp"
+#include "rune/scene/scene_manager.hpp"
 #include "rune/scripting/script_engine.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
@@ -91,8 +93,8 @@ namespace Rune
         graphicsInst.setWindow(&WindowSystem::getInstance());
 
         ScriptEngine::getInstance().init();
-
         AssetRegistry::getInstance().init();
+        SceneManager::getInstance().init();
 
         auto& assetRegistry = AssetRegistry::getInstance();
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
@@ -114,7 +116,7 @@ namespace Rune
             auto matHandle = assetRegistry.add("mat_flat_color", CreateOwned<Material>());
             auto mat = assetRegistry.get<Material>(matHandle);
             mat->setShader(flatColorShader);
-            
+
             surfaceMaterial = mat->createInstance();
             surfaceMaterial->setFloat4("u_material.diffuse", { 0.47f, 0.46f, 0.82f, 0.0f });
             redMaterial = mat->createInstance();
@@ -156,6 +158,9 @@ namespace Rune
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
 
+        auto* scene = SceneManager::getInstance().getActiveScene();
+        auto entity = scene->createEntity();
+
         /* Call application init */
         init();
     }
@@ -165,6 +170,7 @@ namespace Rune
         Time::beginFrame();
         InputSystem::getInstance().newFrame();
         WindowSystem::getInstance().update();
+        SceneManager::getInstance().update();
 
         /* Testing */
         {
@@ -297,6 +303,7 @@ namespace Rune
         cleanup();
 
         // Cleanup engine subsystems
+        SceneManager::getInstance().cleanup();
         AssetRegistry::getInstance().cleanup();
         ScriptEngine::getInstance().shutdown();
         GraphicsSystem::getInstance().cleanup();
