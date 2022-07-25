@@ -13,6 +13,7 @@
 #include "rune/assets/asset_factory.hpp"
 #include "rune/assets/asset_registry.hpp"
 #include "rune/events/events.hpp"
+#include "rune/scene/entity.hpp"
 #include "rune/scene/scene.hpp"
 #include "rune/scene/scene_manager.hpp"
 #include "rune/scripting/script_engine.hpp"
@@ -160,6 +161,7 @@ namespace Rune
 
         auto* scene = SceneManager::getInstance().getActiveScene();
         auto entity = scene->createEntity();
+        auto name = entity.getName();
 
         /* Call application init */
         init();
