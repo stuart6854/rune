@@ -43,6 +43,7 @@ namespace Rune
         glm::vec3 cameraRot = { 0.0f, 0.0f, 0 };
         glm::mat4 viewMatrix;
 
+        ScriptComponent scriptComponent{};
     }  // namespace
 
     void Game::sysInit()
@@ -122,6 +123,12 @@ namespace Rune
 
         // Register core events
         EventSystem::listen<EventWindowClose>([](const EventWindowClose& event) { Game::close(); });
+
+        scriptComponent.name = "Sandbox.Player";
+        if (ScriptEngine::getInstance().entityClassExists(scriptComponent.name))
+        {
+            ScriptEngine::getInstance().onCreateEntity(scriptComponent.name);
+        }
 
         /* Call application init */
         init();
@@ -221,6 +228,8 @@ namespace Rune
                 viewMatrix = glm::inverse(viewMatrix);
             }
         }
+
+        ScriptEngine::getInstance().onUpdateEntity(Time::getDeltaTime());
 
         constexpr float radius = 5.0f;
         auto time = Time::getTimeSinceStartup() * 50.0f;

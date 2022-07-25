@@ -12,5 +12,14 @@ namespace Rune
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern float NativeLog_Vector3Dot(ref Vector3 param);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Entity_GetTranslation(ulong id, out Vector3 param);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Entity_SetTranslation(ulong id, ref Vector3 param);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Input_IsKeyHeld(int key);
     }
 }

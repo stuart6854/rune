@@ -3,6 +3,7 @@
 
 #include "rune/macros.hpp"
 #include "rune/scripting/script_glue.hpp"
+#include "rune/utility/guid.hpp"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -92,6 +93,9 @@ namespace Rune
         MonoImage* coreAssemblyImage = nullptr;
 
         ScriptClass entityClass;
+
+        std::unordered_map<std::string, ScriptClass> entityClasses;
+        std::unordered_map<Guid, Shared<ScriptInstance>> entityInstances;
     };
 
     static Owned<ScriptEngineData> s_data;
@@ -108,9 +112,11 @@ namespace Rune
 
         initMono();
         loadAssembly("assets/scripts/Rune-ScriptCore.dll");
+        loadAssemblyClasses(s_data->coreAssembly);
 
         ScriptGlue::registerFunctions();
 
+#if 0
         // Retrieve and instantiate class
         s_data->entityClass = ScriptClass("Rune", "Entity");
 
@@ -130,12 +136,47 @@ namespace Rune
         MonoString* monoString = mono_string_new(s_data->appDomain, "Hello World from C++!");
         void* stringParam = monoString;
         s_data->entityClass.invokeMethod(instance, printCustomMessageFunc, &stringParam);
+#endif
     }
 
     void ScriptEngine::shutdown() const
     {
         shutdownMono();
         s_data = nullptr;
+    }
+
+    void ScriptEngine::loadAssembly(const std::string& filename) const
+    {
+        // Create an App Domain
+        s_data->appDomain = mono_domain_create_appdomain(const_cast<char*>("RuneScriptRuntime"), nullptr);
+        mono_domain_set(s_data->appDomain, true);
+
+        s_data->coreAssembly = Utils::loadMonoAssembly(filename);
+        s_data->coreAssemblyImage = mono_assembly_get_image(s_data->coreAssembly);
+        // Utils::printAssemblyTypes(s_data->coreAssembly);
+    }
+
+    bool ScriptEngine::entityClassExists(const std::string& fullClassName) const
+    {
+        return s_data->entityClasses.contains(fullClassName);
+    }
+
+    void ScriptEngine::onCreateEntity(const std::string& fullClassName) const
+    {
+        if (entityClassExists(fullClassName))
+        {
+            auto instance = CreateShared<ScriptInstance>(s_data->entityClasses[fullClassName]);
+            s_data->entityInstances[0] = instance;
+            instance->invokeOnCreate();
+        }
+    }
+
+    void ScriptEngine::onUpdateEntity(const float deltaTime) const
+    {
+        auto instance = s_data->entityInstances[0];
+        RUNE_ENG_ASSERT(instance, "");
+
+        instance->invokeOnUpdate(deltaTime);
     }
 
     void ScriptEngine::initMono() const
@@ -155,22 +196,47 @@ namespace Rune
         mono_jit_cleanup(s_data->rootDomain);
     }
 
-    void ScriptEngine::loadAssembly(const std::string& filename) const
-    {
-        // Create an App Domain
-        s_data->appDomain = mono_domain_create_appdomain(const_cast<char*>("RuneScriptRuntime"), nullptr);
-        mono_domain_set(s_data->appDomain, true);
-
-        s_data->coreAssembly = Utils::loadMonoAssembly(filename);
-        s_data->coreAssemblyImage = mono_assembly_get_image(s_data->coreAssembly);
-        // Utils::printAssemblyTypes(s_data->coreAssembly);
-    }
-
     MonoObject* ScriptEngine::instantiateClass(MonoClass* monoClass) const
     {
         MonoObject* instance = mono_object_new(s_data->appDomain, monoClass);
         mono_runtime_object_init(instance);  // Parameter-less Constructor
         return instance;
+    }
+
+    void ScriptEngine::loadAssemblyClasses(MonoAssembly* assembly) const
+    {
+        s_data->entityClasses.clear();
+
+        MonoImage* image = mono_assembly_get_image(assembly);
+        const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+
+        MonoClass* entityClass = mono_class_from_name(image, "Rune", "Entity");
+
+        i32 numTypes = mono_table_info_get_rows(typeDefinitionTable);
+        for (i32 i = 0; i < numTypes; ++i)
+        {
+            u32 cols[MONO_TYPEDEF_SIZE];
+            mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
+
+            const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+            const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+            std::string fullname;
+            if (strlen(nameSpace) != 0)
+                fullname = fmt::format("{}.{}", nameSpace, name);
+            else
+                fullname = name;
+
+            MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+
+            if (monoClass == entityClass)
+                continue;
+
+            bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+            if (isEntity)
+            {
+                s_data->entityClasses[fullname] = ScriptClass{ nameSpace, name };
+            }
+        }
     }
 
     ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className)
@@ -192,5 +258,30 @@ namespace Rune
     MonoObject* ScriptClass::invokeMethod(MonoObject* instance, MonoMethod* method, void** params) const
     {
         return mono_runtime_invoke(method, instance, params, nullptr);
+    }
+
+    ScriptInstance::ScriptInstance(ScriptClass& scriptClass) : m_scriptClass(scriptClass)
+    {
+        m_instance = scriptClass.instantiate();
+
+        m_constructor = s_data->entityClass.getMethod(".ctor", 1);
+        m_onCreateMethod = scriptClass.getMethod("OnCreate", 0);
+        m_onUpdateMethod = scriptClass.getMethod("OnUpdate", 1);
+
+        {
+            // void* param entity.getGuid();
+            // scriptClass.invokeMethod(m_instance, m_constructor, &param);
+        }
+    }
+
+    void ScriptInstance::invokeOnCreate() const
+    {
+        m_scriptClass.invokeMethod(m_instance, m_onCreateMethod);
+    }
+
+    void ScriptInstance::invokeOnUpdate(float deltaTime) const
+    {
+        void* param = &deltaTime;
+        m_scriptClass.invokeMethod(m_instance, m_onUpdateMethod, &param);
     }
 }

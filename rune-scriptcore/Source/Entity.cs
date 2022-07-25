@@ -12,37 +12,41 @@ namespace Rune
             this.y = y;
             this.z = z;
         }
+
+        public static Vector3 operator+(Vector3 v, float s)
+        {
+            return new Vector3(v.x + s, v.y + s, v.z + s);
+        }
+
+        public static Vector3 operator*(Vector3 v, float s)
+        {
+            return new Vector3(v.x * s, v.y * s, v.z * s);
+        }
     }
 
     public class Entity
     {
-        public float FloatVar { get; set; }
+        public readonly ulong Id;
 
         public Entity()
         {
-            Console.WriteLine("Main constructor!");
-
-            InternalCalls.NativeLog("Stuart", 24);
-
-            Vector3 pos = new Vector3(5, 2.5f, 1);
-            InternalCalls.NativeLog_Vector3(ref pos, out Vector3 result);
-            Console.WriteLine($"{result.x},{result.y},{result.z}");
-            Console.WriteLine("{0}", InternalCalls.NativeLog_Vector3Dot(ref pos));
+            Id = 0;
         }
 
-        public void PrintMessage()
+        internal Entity(ulong id)
         {
-            Console.WriteLine("Hello World from C#!");
+            Id = id;
+            Console.WriteLine($"Entity ID: {id}");
         }
 
-        public void PrintInt(int value)
+        public Vector3 Translation
         {
-            Console.WriteLine($"C# says: {value}");
-        }
-
-        public void PrintCustomMessage(string message)
-        {
-            Console.WriteLine($"C# says: {message}");
+            get
+            {
+                InternalCalls.Entity_GetTranslation(Id, out Vector3 translation);
+                return translation;
+            }
+            set => InternalCalls.Entity_SetTranslation(Id, ref value);
         }
     }
 }
