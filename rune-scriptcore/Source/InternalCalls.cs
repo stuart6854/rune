@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
+using System.Runtime.CompilerServices;
 
 namespace Rune
 {

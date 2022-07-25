@@ -1,3 +1,5 @@
+// # Copyright � Stuart Millman <stu.millman15@gmail.com>
+
 #include "pch.hpp"
 #include "rune/init.hpp"
 
@@ -7,11 +9,16 @@
 #include "rune/core/time.hpp"
 #include "rune/core/window.hpp"
 #include "rune/graphics/graphics.hpp"
+#include "rune/graphics/shader.hpp"
 #include "rune/graphics/material.hpp"
 #include "rune/input/input.hpp"
 #include "rune/assets/asset_factory.hpp"
 #include "rune/assets/asset_registry.hpp"
 #include "rune/events/events.hpp"
+#include "rune/scene/components.hpp"
+#include "rune/scene/entity.hpp"
+#include "rune/scene/scene.hpp"
+#include "rune/scene/scene_manager.hpp"
 #include "rune/scripting/script_engine.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
@@ -29,6 +36,12 @@ namespace Rune
         // Static engine systems
         // static WindowSystem s_windowSystem;
         // InputSystem& s_inputSystem = InputSystem::getInstance();
+
+        Mesh* testSceneMesh = nullptr;
+        MaterialInst* surfaceMaterial = nullptr;
+        MaterialInst* redMaterial = nullptr;
+        MaterialInst* greenMaterial = nullptr;
+        MaterialInst* blueMaterial = nullptr;
 
         Mesh* mesh = nullptr;
         Texture* texture = nullptr;
@@ -85,13 +98,39 @@ namespace Rune
         graphicsInst.setWindow(&WindowSystem::getInstance());
 
         ScriptEngine::getInstance().init();
-
         AssetRegistry::getInstance().init();
+        SceneManager::getInstance().init();
 
         auto& assetRegistry = AssetRegistry::getInstance();
         assetRegistry.registerFactory<TextureFactory>(AssetType::eTexture);
         assetRegistry.registerFactory<MeshFactory>(AssetType::eMesh);
         assetRegistry.registerFactory<ShaderFactory>(AssetType::eShader);
+
+        {
+            // Load test_scene model
+            auto testSceneHandle = assetRegistry.add("assets/models/test_scene.fbx");
+            assetRegistry.load(testSceneHandle);
+            testSceneMesh = assetRegistry.get<Mesh>(testSceneHandle);
+
+            // Load flat_color shader
+            auto flatColorShaderHandle = assetRegistry.add("assets/shaders/flat_color.shader");
+            assetRegistry.load(flatColorShaderHandle);
+            Shader* flatColorShader = assetRegistry.get<Shader>(flatColorShaderHandle);
+
+            // Setup test_scene materials
+            auto matHandle = assetRegistry.add("mat_flat_color", CreateOwned<Material>());
+            auto mat = assetRegistry.get<Material>(matHandle);
+            mat->setShader(flatColorShader);
+
+            surfaceMaterial = mat->createInstance();
+            surfaceMaterial->setFloat4("u_material.diffuse", { 0.47f, 0.46f, 0.82f, 0.0f });
+            redMaterial = mat->createInstance();
+            redMaterial->setFloat4("u_material.diffuse", { 1, 0, 0, 0.0f });
+            greenMaterial = mat->createInstance();
+            redMaterial->setFloat4("u_material.diffuse", { 0, 1, 0, 0.0f });
+            blueMaterial = mat->createInstance();
+            redMaterial->setFloat4("u_material.diffuse", { 0, 0, 1, 0.0f });
+        }
 
         // auto textureHandle = assetRegistry.add("assets/textures/texture.jpg");
         auto textureHandle = assetRegistry.add("assets/models/backpack/diffuse.jpg");
@@ -129,6 +168,16 @@ namespace Rune
         {
             ScriptEngine::getInstance().onCreateEntity(scriptComponent.name);
         }
+        
+        auto* scene = SceneManager::getInstance().getActiveScene();
+        auto entity = scene->createEntity();
+        auto name = entity.getName();
+        auto* transform = entity.add<Transform>();
+        transform->setPosition({ 8, 3, 10 });
+
+        auto* renderer = entity.add<MeshRenderer>();
+        renderer->mesh = mesh;
+        renderer->material = material->getDefaultInstance();
 
         /* Call application init */
         init();
@@ -139,6 +188,7 @@ namespace Rune
         Time::beginFrame();
         InputSystem::getInstance().newFrame();
         WindowSystem::getInstance().update();
+        SceneManager::getInstance().update();
 
         /* Testing */
         {
@@ -249,6 +299,8 @@ namespace Rune
 
         GraphicsSystem::getInstance().beginScene(projMatrix, viewMatrix, lighting);
 
+        GraphicsSystem::getInstance().addRenderable(glm::mat4(1.0f), testSceneMesh, surfaceMaterial);
+
         rotY += 5.0f * Time::getDeltaTime();
 
         // Centre
@@ -271,6 +323,7 @@ namespace Rune
         cleanup();
 
         // Cleanup engine subsystems
+        SceneManager::getInstance().cleanup();
         AssetRegistry::getInstance().cleanup();
         ScriptEngine::getInstance().shutdown();
         GraphicsSystem::getInstance().cleanup();

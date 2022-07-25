@@ -1,4 +1,6 @@
-﻿using System;
+﻿// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
+using System;
 
 namespace Rune
 {

@@ -1,3 +1,5 @@
+// # Copyright © Stuart Millman <stu.millman15@gmail.com>
+
 #include "pch.hpp"
 #include "rune/scripting/script_engine.hpp"
 
