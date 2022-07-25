@@ -13,12 +13,12 @@ namespace Rune
 
     Entity::Entity(const Entity& entity) : m_scene(entity.m_scene), m_entity(entity.m_entity) {}
 
-    auto Entity::getGuid() -> const Guid&
+    auto Entity::getGuid() const -> const Guid&
     {
         return get<EntityHeader>()->guid;
     }
 
-    auto Entity::getName() -> const std::string&
+    auto Entity::getName() const -> const std::string&
     {
         return get<EntityHeader>()->name;
     }
@@ -28,7 +28,7 @@ namespace Rune
         get<EntityHeader>()->name = name;
     }
 
-    auto Entity::getTag() -> const std::string&
+    auto Entity::getTag() const -> const std::string&
     {
         return get<EntityHeader>()->tag;
     }

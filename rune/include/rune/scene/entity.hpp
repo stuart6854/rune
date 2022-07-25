@@ -17,27 +17,22 @@ namespace Rune
         Entity(Scene* scene, entt::entity entity);
         Entity(const Entity&);
 
-        // TODO: Make const
-        auto getGuid() -> const Guid&;
+        auto getGuid() const -> const Guid&;
 
-        // TODO: Make const
-        auto getName() -> const std::string&;
+        auto getName() const -> const std::string&;
         void setName(const std::string& name);
 
-        // TODO: Make const
-        auto getTag() -> const std::string&;
+        auto getTag() const -> const std::string&;
         void setTag(const std::string& tag);
 
-        // TODO: Add const variant
         template <typename T>
-        bool has();
-
-        // TODO: Add const variant
-        template <typename T>
-        auto get() -> T*;
+        bool has() const;
 
         template <typename T>
-        auto add() -> T*;
+        auto get() const -> T*;
+
+        template <typename T>
+        auto add() const -> T*;
 
         template <typename T>
         void remove() const;
@@ -51,19 +46,19 @@ namespace Rune
     };
 
     template <typename T>
-    bool Entity::has()
+    bool Entity::has() const
     {
         return m_scene->getRegistry().all_of<T>();
     }
 
     template <typename T>
-    auto Entity::get() -> T*
+    auto Entity::get() const -> T*
     {
         return m_scene->getRegistry().try_get<T>(m_entity);
     }
 
     template <typename T>
-    auto Entity::add() -> T*
+    auto Entity::add() const -> T*
     {
         m_scene->getRegistry().emplace<T>(m_entity);
         return m_scene->getRegistry().try_get<T>(m_entity);
