@@ -1,18 +1,12 @@
 #pragma once
 
 #include "graphics.hpp"
-#include "graphics.hpp"
-#include "graphics.hpp"
-#include "graphics.hpp"
-#include "graphics.hpp"
 #include "rune/defines.hpp"
 #include "mesh.hpp"
-#include "shader.hpp"
 #include "texture.hpp"
 #include "material.hpp"
 
 #include <array>
-#include <functional>
 
 namespace Rune
 {
