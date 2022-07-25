@@ -163,7 +163,9 @@ namespace Rune
         auto* scene = SceneManager::getInstance().getActiveScene();
         auto entity = scene->createEntity();
         auto name = entity.getName();
-        entity.add<Transform>();
+        auto* transform = entity.add<Transform>();
+        transform->setPosition({8, 3, 10});
+
         auto* renderer = entity.add<MeshRenderer>();
         renderer->mesh = mesh;
         renderer->material = material->getDefaultInstance();

@@ -21,7 +21,7 @@ namespace Rune
             {
                 auto [transform, renderer] = view.get(entity);
 
-                GraphicsSystem::getInstance().addRenderable(glm::mat4(1.0f), renderer.mesh, renderer.material);
+                GraphicsSystem::getInstance().addRenderable(transform.getTransform(), renderer.mesh, renderer.material);
             }
         }
     }
