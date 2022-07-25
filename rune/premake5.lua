@@ -1,3 +1,15 @@
+function UseVulkan()
+    VULKAN_SDK = os.getenv("VULKAN_SDK")
+
+    externalincludedirs
+    {
+        "%{VULKAN_SDK}/Include"
+    }
+    libdirs { "%{VULKAN_SDK}/Lib" }
+    links { "vulkan-1.lib" }
+end
+
+
 project "Rune"
     kind "StaticLib"
     language "C++"
@@ -28,6 +40,7 @@ project "Rune"
 
     UseSpdlog()
     UseGLFW()
+    UseVulkan()
     UseGlad()
     UseGLM()
     UseSPIRVReflect()
