@@ -22,6 +22,6 @@ namespace Rune
         internal static extern void Entity_SetTranslation(ulong id, ref Vector3 param);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void Input_IsKeyHeld(int key);
+        internal static extern bool Input_IsKeyHeld(int key);
     }
 }

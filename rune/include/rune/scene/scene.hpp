@@ -6,6 +6,7 @@
 
 namespace Rune
 {
+    class Guid;
     class Entity;
 
     class Scene
@@ -21,6 +22,8 @@ namespace Rune
 
         auto createEntity(std::string name = "") -> Entity;
         void destroyEntity(const Entity& entity);
+
+        auto getEntityByGuid(const Guid& guid) -> Entity;
 
     private:
         entt::registry m_registry;

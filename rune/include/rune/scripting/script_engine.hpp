@@ -9,6 +9,9 @@
 
 namespace Rune
 {
+    class Scene;
+    class Entity;
+
     class ScriptEngine
     {
     public:
@@ -21,9 +24,10 @@ namespace Rune
 
         bool entityClassExists(const std::string& fullClassName) const;
 
-        // TODO: Pass Entity as only param
-        void onCreateEntity(const std::string& fullClassName) const;
-        void onUpdateEntity(float deltaTime) const;
+        void onCreateEntity(Entity& entity) const;
+        void onUpdateEntity(Scene* scene, Entity& entity, float deltaTime) const;
+
+        auto getSceneContext() const -> Scene*;
 
     private:
         friend class ScriptClass;
@@ -57,7 +61,7 @@ namespace Rune
     class ScriptInstance
     {
     public:
-        ScriptInstance(ScriptClass& scriptClass);
+        ScriptInstance(Entity& entity, ScriptClass& scriptClass);
 
         void invokeOnCreate() const;
         void invokeOnUpdate(float deltaTime) const;
@@ -69,14 +73,5 @@ namespace Rune
         MonoMethod* m_constructor = nullptr;
         MonoMethod* m_onCreateMethod = nullptr;
         MonoMethod* m_onUpdateMethod = nullptr;
-    };
-
-    // TODO: Script Component to be moved out to components class
-    struct ScriptComponent
-    {
-        std::string name;
-
-        ScriptComponent() = default;
-        ScriptComponent(const ScriptComponent&) = default;
     };
 }

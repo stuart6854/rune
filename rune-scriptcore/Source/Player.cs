@@ -6,31 +6,27 @@ namespace Sandbox
 {
     public class Player : Entity
     {
-        void OnCreate()
+        private void OnCreate()
         {
             Console.WriteLine("Player.OnCreate()");
         }
 
-        void OnUpdate(float deltaTime)
+        private void OnUpdate(float deltaTime)
         {
-            Console.WriteLine($"Player.OnUpdate({deltaTime})");
-            
-            float speed = 2.0f;
-            Vector3 velocity = new Vector3();
-            if (Input.IsKeyHeld(Keycode.W))
-            {
+            const float speed = 5.0f;
+            var velocity = new Vector3();
+            if (Input.IsKeyHeld(Keycode.Keypad8))
                 velocity.z += 1.0f;
-            }
-            if (Input.IsKeyHeld(Keycode.S))
-            {
+            if (Input.IsKeyHeld(Keycode.Keypad2))
                 velocity.z += -1.0f;
-            }
+            if (Input.IsKeyHeld(Keycode.Keypad6))
+                velocity.x += 1.0f;
+            if (Input.IsKeyHeld(Keycode.Keypad4))
+                velocity.x += -1.0f;
 
-            velocity = velocity * speed;
+            velocity *= speed * deltaTime;
 
-            Vector3 translation = Translation;
-            translation = translation + velocity;
-            Translation = translation;
+            Translation += velocity;
         }
     }
 }

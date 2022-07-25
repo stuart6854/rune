@@ -4,7 +4,7 @@
     {
         public static bool IsKeyHeld(Keycode key)
         {
-            return InternalCalls.Input_IsKeyHeld(key);
+            return InternalCalls.Input_IsKeyHeld((int)key);
         }
     }
 }

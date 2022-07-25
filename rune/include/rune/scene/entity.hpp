@@ -3,6 +3,7 @@
 #pragma once
 
 #include "scene.hpp"
+#include "rune/defines.hpp"
 #include "rune/utility/guid.hpp"
 
 #include <entt/entity/entity.hpp>
@@ -16,17 +17,22 @@ namespace Rune
         Entity(Scene* scene, entt::entity entity);
         Entity(const Entity&);
 
-        auto getGuid() const -> const Guid&;
+        // TODO: Make const
+        auto getGuid() -> const Guid&;
 
+        // TODO: Make const
         auto getName() -> const std::string&;
         void setName(const std::string& name);
 
+        // TODO: Make const
         auto getTag() -> const std::string&;
         void setTag(const std::string& tag);
 
+        // TODO: Add const variant
         template <typename T>
         bool has();
 
+        // TODO: Add const variant
         template <typename T>
         auto get() -> T*;
 
@@ -36,14 +42,12 @@ namespace Rune
         template <typename T>
         void remove() const;
 
-        operator u64() const;
+        operator u32() const;
         operator entt::entity() const;
 
     private:
         Scene* m_scene;
         entt::entity m_entity;
-
-        Guid m_guid;
     };
 
     template <typename T>

@@ -4,28 +4,6 @@ using System;
 
 namespace Rune
 {
-    public struct Vector3
-    {
-        public float x, y, z;
-
-        public Vector3(float x = 0, float y = 0, float z = 0)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public static Vector3 operator+(Vector3 v, float s)
-        {
-            return new Vector3(v.x + s, v.y + s, v.z + s);
-        }
-
-        public static Vector3 operator*(Vector3 v, float s)
-        {
-            return new Vector3(v.x * s, v.y * s, v.z * s);
-        }
-    }
-
     public class Entity
     {
         public readonly ulong Id;

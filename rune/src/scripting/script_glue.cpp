@@ -4,6 +4,11 @@
 #include "rune/scripting/script_glue.hpp"
 
 #include "rune/macros.hpp"
+#include "rune/input/input.hpp"
+#include "rune/scene/components.hpp"
+#include "rune/scene/entity.hpp"
+#include "rune/scene/scene.hpp"
+#include "rune/scripting/script_engine.hpp"
 #include "rune/utility/guid.hpp"
 
 #include <glm/glm.hpp>
@@ -38,15 +43,23 @@ namespace Rune
         return glm::dot(*param, *param);
     }
 
-    static void Entity_GetTranslation(Guid entityId, glm::vec3* outTranslation)
+    static void Entity_GetTranslation(const Guid entityId, glm::vec3* outTranslation)
     {
-        // Scene* scene = ScriptEngine::getSceneContext();
-        //Entity entity = scene->getEntityByGuid(entityId);
+        Scene* scene = ScriptEngine::getInstance().getSceneContext();
+        Entity entity = scene->getEntityByGuid(entityId);
+        *outTranslation = entity.get<Transform>()->getPosition();
     }
 
-    static void Entity_SetTranslation(Guid entityId, glm::vec3* translation)
+    static void Entity_SetTranslation(const Guid entityId, const glm::vec3* translation)
     {
-        // Scene* scene = ScriptEngine::getSceneContext();
+        Scene* scene = ScriptEngine::getInstance().getSceneContext();
+        Entity entity = scene->getEntityByGuid(entityId);
+        entity.get<Transform>()->setPosition(*translation);
+    }
+
+    static bool Input_IsKeyHeld(const int key)
+    {
+        return InputSystem::getInstance().isKeyHeld(key);
     }
 
     void ScriptGlue::registerFunctions()
@@ -56,5 +69,6 @@ namespace Rune
         RUNE_ADD_INTERNAL_CALL(NativeLog_Vector3Dot);
         RUNE_ADD_INTERNAL_CALL(Entity_GetTranslation);
         RUNE_ADD_INTERNAL_CALL(Entity_SetTranslation);
+        RUNE_ADD_INTERNAL_CALL(Input_IsKeyHeld);
     }
 }

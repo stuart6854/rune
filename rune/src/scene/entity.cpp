@@ -7,15 +7,15 @@
 
 namespace Rune
 {
-    Entity::Entity() : m_scene(nullptr), m_entity(entt::null), m_guid(0) {}
+    Entity::Entity() : m_scene(nullptr), m_entity(entt::null) {}
 
     Entity::Entity(Scene* scene, const entt::entity entity) : m_scene(scene), m_entity(entity) {}
 
-    Entity::Entity(const Entity& entity) : m_scene(entity.m_scene), m_entity(entity.m_entity), m_guid(entity.m_guid) {}
+    Entity::Entity(const Entity& entity) : m_scene(entity.m_scene), m_entity(entity.m_entity) {}
 
-    auto Entity::getGuid() const -> const Guid&
+    auto Entity::getGuid() -> const Guid&
     {
-        return m_guid;
+        return get<EntityHeader>()->guid;
     }
 
     auto Entity::getName() -> const std::string&
@@ -38,9 +38,9 @@ namespace Rune
         get<EntityHeader>()->tag = tag;
     }
 
-    Entity::operator u64() const
+    Entity::operator u32() const
     {
-        return m_guid;
+        return static_cast<u32>(m_entity);
     }
 
     Entity::operator entt::entity() const

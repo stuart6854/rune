@@ -2,11 +2,13 @@
 
 #pragma once
 
+#include "rune/utility/guid.hpp"
+
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include <string>
-#include <glm/ext/matrix_transform.hpp>
 
 #define COMPONENT_DEFAULT_CTORS(COMP_NAME) \
     COMP_NAME() = default;                 \
@@ -19,6 +21,7 @@ namespace Rune
 
     struct EntityHeader
     {
+        Guid guid;
         std::string name;
         std::string tag;
 
@@ -66,5 +69,13 @@ namespace Rune
         MaterialInst* material;
 
         COMPONENT_DEFAULT_CTORS(MeshRenderer)
+    };
+
+    struct ScriptBehaviour
+    {
+        /* eg. "Namespace.Class" */
+        std::string classFullname;
+
+        COMPONENT_DEFAULT_CTORS(ScriptBehaviour)
     };
 }

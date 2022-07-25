@@ -4,6 +4,8 @@
 #include "rune/scripting/script_engine.hpp"
 
 #include "rune/macros.hpp"
+#include "rune/scene/components.hpp"
+#include "rune/scene/entity.hpp"
 #include "rune/scripting/script_glue.hpp"
 #include "rune/utility/guid.hpp"
 
@@ -98,6 +100,8 @@ namespace Rune
 
         std::unordered_map<std::string, ScriptClass> entityClasses;
         std::unordered_map<Guid, Shared<ScriptInstance>> entityInstances;
+
+        Scene* sceneContext = nullptr;
     };
 
     static Owned<ScriptEngineData> s_data;
@@ -118,10 +122,10 @@ namespace Rune
 
         ScriptGlue::registerFunctions();
 
-#if 0
         // Retrieve and instantiate class
         s_data->entityClass = ScriptClass("Rune", "Entity");
 
+#if 0
         MonoObject* instance = s_data->entityClass.instantiate();
 
         // Call method
@@ -163,22 +167,33 @@ namespace Rune
         return s_data->entityClasses.contains(fullClassName);
     }
 
-    void ScriptEngine::onCreateEntity(const std::string& fullClassName) const
+    void ScriptEngine::onCreateEntity(Entity& entity) const
     {
-        if (entityClassExists(fullClassName))
+        auto* scriptBehaviour = entity.get<ScriptBehaviour>();
+        RUNE_ENG_ASSERT(scriptBehaviour != nullptr, "Entity does not have ScriptBehaviour component!");
+
+        if (entityClassExists(scriptBehaviour->classFullname))
         {
-            auto instance = CreateShared<ScriptInstance>(s_data->entityClasses[fullClassName]);
-            s_data->entityInstances[0] = instance;
+            auto& scriptClass = s_data->entityClasses[scriptBehaviour->classFullname];
+            auto instance = CreateShared<ScriptInstance>(entity, scriptClass);
+            s_data->entityInstances[entity.getGuid()] = instance;
             instance->invokeOnCreate();
         }
     }
 
-    void ScriptEngine::onUpdateEntity(const float deltaTime) const
+    void ScriptEngine::onUpdateEntity(Scene* scene, Entity& entity, const float deltaTime) const
     {
-        auto instance = s_data->entityInstances[0];
-        RUNE_ENG_ASSERT(instance, "");
+        s_data->sceneContext = scene;
+
+        const auto& instance = s_data->entityInstances[entity.getGuid()];
+        RUNE_ENG_ASSERT(instance, "There is no instance for this entity!");
 
         instance->invokeOnUpdate(deltaTime);
+    }
+
+    auto ScriptEngine::getSceneContext() const -> Scene*
+    {
+        return s_data->sceneContext;
     }
 
     void ScriptEngine::initMono() const
@@ -262,7 +277,7 @@ namespace Rune
         return mono_runtime_invoke(method, instance, params, nullptr);
     }
 
-    ScriptInstance::ScriptInstance(ScriptClass& scriptClass) : m_scriptClass(scriptClass)
+    ScriptInstance::ScriptInstance(Entity& entity, ScriptClass& scriptClass) : m_scriptClass(scriptClass)
     {
         m_instance = scriptClass.instantiate();
 
@@ -271,8 +286,9 @@ namespace Rune
         m_onUpdateMethod = scriptClass.getMethod("OnUpdate", 1);
 
         {
-            // void* param entity.getGuid();
-            // scriptClass.invokeMethod(m_instance, m_constructor, &param);
+            auto guid = entity.getGuid();
+            void* param = &guid;
+            scriptClass.invokeMethod(m_instance, m_constructor, &param);
         }
     }
 
