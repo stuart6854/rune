@@ -1,8 +1,9 @@
-// # Copyright � Stuart Millman <stu.millman15@gmail.com>
+// # Copyright © Stuart Millman <stu.millman15@gmail.com>
 
 #include "pch.hpp"
 #include "rune/init.hpp"
 
+#include "graphics/renderer.hpp"
 #include "rune/macros.hpp"
 #include "rune/core/config.hpp"
 #include "rune/core/log.hpp"
@@ -92,6 +93,7 @@ namespace Rune
         inputInst.init({ props.width, props.height });
 
         // TODO: Get rendering settings from config
+        Renderer::init("APP_NAME");
         auto& graphicsInst = GraphicsSystem::getInstance();
         graphicsInst.init(RenderingApi::eOpenGL);
         graphicsInst.setWindow(&WindowSystem::getInstance());
@@ -325,6 +327,7 @@ namespace Rune
         AssetRegistry::getInstance().cleanup();
         ScriptEngine::getInstance().shutdown();
         GraphicsSystem::getInstance().cleanup();
+        Renderer::cleanup();
         InputSystem::getInstance().cleanup();
         WindowSystem::getInstance().cleanup();
         ConfigSystem::getInstance().cleanup();

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
 
 namespace Rune
@@ -14,5 +15,7 @@ namespace Rune
 
     private:
         static void initInstance(const std::string& appName);
+        static void pickPhysicalDevice();
+        static void initLogicalDevice(const vk::PhysicalDeviceFeatures& deviceFeatures);
     };
 }

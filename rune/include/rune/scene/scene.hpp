@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "graphics/scene_renderer.hpp"
+
 #include <entt/entity/registry.hpp>
 
 namespace Rune
@@ -27,5 +29,7 @@ namespace Rune
 
     private:
         entt::registry m_registry;
+
+        SceneRenderer m_sceneRenderer;
     };
 }

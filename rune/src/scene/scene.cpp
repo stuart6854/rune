@@ -28,15 +28,18 @@ namespace Rune
             }
         }
 
+        m_sceneRenderer.beginScene(glm::mat4{ 1.0f }, glm::mat4{ 1.0f });
         {
             auto view = m_registry.view<Transform, MeshRenderer>();
             for (const auto& entity : view)
             {
                 auto [transform, renderer] = view.get(entity);
 
+                //m_sceneRenderer.submit(renderer.mesh, renderer.material, transform.getTransform());
                 GraphicsSystem::getInstance().addRenderable(transform.getTransform(), renderer.mesh, renderer.material);
             }
         }
+        m_sceneRenderer.endScene();
     }
 
     auto Scene::getRegistry() -> entt::registry&
